@@ -14,7 +14,6 @@ import androidx.annotation.ColorInt
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import com.osfans.trime.core.CandidateProto
-import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.sp
@@ -63,12 +62,50 @@ class LabeledCandidateItemUi(
     ) = inSpans(CandidateItemSpan(color, textSize, typeface), builderAction)
 
     /**
+     * 背景 Drawable 缓存。
+     *
+     * 同一个 row（RecyclerView 复用）只会用到「普通 / 高亮」两种背景，
+     * 因此各自缓存一份即可，避免每次绑定都新建 GradientDrawable。
+     */
+    private var backgroundSignature: Long = Long.MIN_VALUE
+    private var normalBackground: GradientDrawable? = null
+    private var highlightedBackground: GradientDrawable? = null
+
+    /** 取当前配色、指定高亮状态下的背景；配色或圆角变化时自动失效重建。 */
+    private fun background(highlighted: Boolean): GradientDrawable {
+        val cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
+        val signature =
+            (highlightCandidateBackColor.toLong() shl 32) or (cornerRadius.toLong() and 0xFFFFFFFFL)
+        if (signature != backgroundSignature) {
+            backgroundSignature = signature
+            normalBackground = null
+            highlightedBackground = null
+        }
+        val cached = if (highlighted) highlightedBackground else normalBackground
+        if (cached != null) return cached
+        val created =
+            GradientDrawable().apply {
+                if (highlighted) {
+                    setColor(highlightCandidateBackColor)
+                    cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
+                } else {
+                    setColor(Color.TRANSPARENT)
+                }
+            }
+        if (highlighted) highlightedBackground = created else normalBackground = created
+        return created
+    }
+
+    /**
      * 构建候选词显示内容：
      * - 第一行（可选）：英文翻译，小号 comment 颜色字体
      * - 第二行：label + text + comment（原有逻辑保持不变）
      *
      * 单行布局通过 '\n' 实现多行显示，FlexboxLayoutManager 高度自适应。
      * 开启英文翻译后所有行都会保留该行（无翻译用空格占位），因此高度一致。
+     *
+     * [englishText] 为 null 表示英文翻译功能关闭（由调用方读取配置后决定），
+     * 非 null（含空串）表示开启：开启时无翻译会用空格占位以保证各行高度一致。
      */
     fun update(
         candidate: CandidateProto,
@@ -81,9 +118,9 @@ class LabeledCandidateItemUi(
         root.text =
             buildSpannedString {
                 // 英文翻译行：开启该功能时始终占位（无翻译用空格），保证各行高度一致
-                if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
+                if (englishText != null) {
                     inSpanWith(commentFg, ctx.sp(englishSize), commentFont) {
-                        append(englishText?.takeIf { it.isNotBlank() } ?: " ")
+                        append(englishText.takeIf { it.isNotBlank() } ?: " ")
                     }
                     append("\n")
                 }
@@ -96,15 +133,7 @@ class LabeledCandidateItemUi(
                     inSpanWith(commentFg, ctx.sp(commentSize), commentFont) { append(candidate.comment) }
                 }
             }
-        val bg =
-            GradientDrawable().apply {
-                if (highlighted) {
-                    setColor(highlightCandidateBackColor)
-                    cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
-                } else {
-                    setColor(Color.TRANSPARENT)
-                }
-            }
-        root.background = bg
+        val bg = background(highlighted)
+        if (root.background !== bg) root.background = bg
     }
 }

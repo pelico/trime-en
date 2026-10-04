@@ -8,13 +8,13 @@ package com.osfans.trime.ime.candidates
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.RippleDrawable
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.osfans.trime.core.CandidateProto
-import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.data.theme.model.GeneralStyle
@@ -217,6 +217,37 @@ class CandidateItemUi(
         )
     }
 
+    /**
+     * 背景 Drawable 缓存。
+     *
+     * 同一个 row（RecyclerView 复用）只会用到「普通 / 高亮」两种背景，
+     * 因此各自缓存一份即可，避免每次绑定都新建 RippleDrawable 与 GradientDrawable。
+     */
+    private var backgroundSignature: Long = Long.MIN_VALUE
+    private var normalBackground: RippleDrawable? = null
+    private var highlightedBackground: RippleDrawable? = null
+
+    /** 取当前配色、指定高亮状态下的背景；配色或圆角变化时自动失效重建。 */
+    private fun background(highlighted: Boolean): RippleDrawable {
+        val cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
+        val signature = (hlBackColor.toLong() shl 32) or (cornerRadius.toLong() and 0xFFFFFFFFL)
+        if (signature != backgroundSignature) {
+            backgroundSignature = signature
+            normalBackground = null
+            highlightedBackground = null
+        }
+        val cached = if (highlighted) highlightedBackground else normalBackground
+        if (cached != null) return cached
+        val created =
+            roundedRippleDrawable(
+                hlBackColor,
+                cornerRadius,
+                if (highlighted) hlBackColor else Color.TRANSPARENT,
+            )
+        if (highlighted) highlightedBackground = created else normalBackground = created
+        return created
+    }
+
     @SuppressLint("UseKtx")
     fun update(
         item: CandidateProto,
@@ -225,10 +256,9 @@ class CandidateItemUi(
     ) {
         val tColor = if (highlighted) hlTextColor else textColor
         val cColor = if (highlighted) hlCommentColor else commentColor
-        val cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
-        val contentColor = if (highlighted) hlBackColor else Color.TRANSPARENT
 
-        content.background = roundedRippleDrawable(hlBackColor, cornerRadius, contentColor)
+        val bg = background(highlighted)
+        if (content.background !== bg) content.background = bg
         text.text = item.text
         text.setTextColor(tColor)
 
@@ -237,11 +267,11 @@ class CandidateItemUi(
         comment.setTextColor(cColor)
         comment.isVisible = commentText.isNotEmpty()
 
-        // 开启英文翻译时始终保留英文行：有翻译则显示翻译，无翻译用空格占位，
-        // 避免未翻译的候选项因独占了英文行的空间而显得更大、更低。
-        val englishMode = AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
-        if (englishMode) {
-            english.text = englishText?.takeIf { it.isNotBlank() } ?: " "
+        // 英文翻译行是否保留由调用方决定：englishText == null 表示该功能关闭，
+        // 非 null（含空串）表示开启。开启时始终保留英文行——有翻译则显示，
+        // 无翻译用空格占位，避免候选词上下高度不一。
+        if (englishText != null) {
+            english.text = englishText.takeIf { it.isNotBlank() } ?: " "
             english.setTextColor(cColor)
             english.isVisible = true
         } else {
@@ -251,7 +281,7 @@ class CandidateItemUi(
 
         // 开启英文翻译时把候选项撑高到输入栏预留的完整高度，为英文行腾出空间；
         // 关闭时保持原有高度，外观与改动前完全一致。
-        val targetHeight = if (englishMode) expandedHeight else candidateHeight
+        val targetHeight = if (englishText != null) expandedHeight else candidateHeight
         if (content.layoutParams?.height != targetHeight) {
             content.updateLayoutParams<ViewGroup.LayoutParams> { height = targetHeight }
         }

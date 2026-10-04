@@ -39,9 +39,17 @@ open class PagingCandidateViewAdapter(
     var highlightedIndex: Int = -1
         private set
 
+    /**
+     * 英文翻译开关的缓存值：每次 [refreshWith] 读一次配置，
+     * 避免在 onBindViewHolder 里为每个候选项重复读取 SharedPreferences。
+     */
+    private var englishEnabled: Boolean =
+        AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
+
     fun refreshWith(offset: Int, highlightedIndex: Int) {
         this.offset = offset
         this.highlightedIndex = highlightedIndex
+        englishEnabled = AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
         refresh()
     }
 
@@ -57,9 +65,10 @@ open class PagingCandidateViewAdapter(
         val item = getItem(position) ?: return
         val idx = position + offset
         val highlighted = idx == highlightedIndex
+        // 功能开启时，即使没有翻译也传空串（由 UI 用空格占位）；关闭时传 null。
         val englishText =
-            if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
-                CnEnDictManager.lookup(item.text)
+            if (englishEnabled) {
+                CnEnDictManager.lookup(item.text).orEmpty()
             } else {
                 null
             }

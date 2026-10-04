@@ -59,6 +59,13 @@ class PagedCandidatesUi(
 
             override fun getItemId(position: Int): Long = items.getOrNull(position).hashCode().toLong()
 
+            /**
+             * 英文翻译开关的缓存值：每次列表更新时读一次配置，
+             * 避免在 onBindViewHolder 里为每个候选项重复读取 SharedPreferences。
+             */
+            var englishEnabled: Boolean =
+                AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
+
             override fun getItemCount(items: List<CandidateProto>) = items.size + (if (candidates.hasPrevPage || candidates.hasNextPage) 1 else 0)
 
             override fun getItemViewType(
@@ -94,9 +101,10 @@ class PagedCandidatesUi(
                 when (holder) {
                     is UiHolder.Candidate -> {
                         val candidate = item ?: return
+                        // 功能开启时，即使没有翻译也传空串（由 UI 用空格占位）；关闭时传 null。
                         val englishText =
-                            if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
-                                CnEnDictManager.lookup(candidate.text)
+                            if (englishEnabled) {
+                                CnEnDictManager.lookup(candidate.text).orEmpty()
                             } else {
                                 null
                             }
@@ -161,11 +169,15 @@ class PagedCandidatesUi(
             }
             alignItems = if (isHorizontal) AlignItems.BASELINE else AlignItems.STRETCH
         }
+        candidatesAdapter.englishEnabled =
+            AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
         candidatesAdapter.submitList(candidates.candidates.toList())
     }
 
     /** Re-binds visible rows so they re-render with the current scheme's colors. */
     fun refreshColors() {
+        candidatesAdapter.englishEnabled =
+            AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
         candidatesAdapter.notifyDataSetChanged()
     }
 }

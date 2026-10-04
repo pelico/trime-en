@@ -5,8 +5,10 @@
 #
 # 取自 SivanLaai/rime-pure（MIT License）的「Clover四叶草九宫拼音」方案，
 # 作为同文输入法的预置九宫格输入方案。为适配本项目的预置数据环境，
-# 仅移除了对未内置的 `emoji` 依赖方案与相关 OpenCC 额外过滤器的引用，
-# 其余拼写代数、词库、简繁切换等均保持原样。
+# 移除了对未内置的 `emoji` 依赖方案与相关 OpenCC 额外过滤器的引用，
+# 并去掉 `dependencies: [stroke]`：`stroke` 方案自身依赖 `luna_pinyin`（本项目
+# 不再内置），而这里仅通过 `reverse_lookup.dictionary: stroke` 使用笔画词库反查，
+# 无需构建整套 stroke 方案。其余拼写代数、词库、简繁切换等均保持原样。
 #
 # 说明：主题 `.trime.yaml` 中提供了同名的 `clover_jiugong` 九宫格键盘，
 # Trime 会依据 schema_id 自动匹配该键盘布局。
@@ -20,8 +22,6 @@ schema:
   description: |
     🍀️四叶草九宫格：
     以🍀️四叶草简体拼音为基础所配置的一款适合在手机九宫格上输入的输入方案。
-  dependencies:
-    - stroke
 
 switches:
   - name: ascii_mode
