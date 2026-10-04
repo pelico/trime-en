@@ -11,7 +11,9 @@ import androidx.core.view.updateLayoutParams
 import com.chad.library.adapter4.BaseQuickAdapter
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.osfans.trime.core.CandidateProto
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.ThemeScope
+import com.osfans.trime.data.translations.CnEnDictManager
 import com.osfans.trime.ime.candidates.CandidateItemUi
 import com.osfans.trime.ime.candidates.CandidateViewHolder
 import splitties.dimensions.dp
@@ -74,7 +76,11 @@ open class CompactCandidateViewAdapter(
     ) {
         item ?: return
         val isHighlighted = position == highlightedIdx
-        holder.ui.update(item, isHighlighted)
+        val englishText =
+            if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
+                CnEnDictManager.lookup(item.text)
+            } else null
+        holder.ui.update(item, isHighlighted, englishText)
         holder.text = item.text
         holder.comment = item.comment
         holder.idx = position // unused

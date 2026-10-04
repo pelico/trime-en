@@ -347,11 +347,18 @@ class AppPrefs(
             const val MODE = "show_candidates_window"
             const val LAYOUT = "candidates_layout"
             const val POSITION = "candidates_window_position"
+            const val SHOW_ENGLISH = "candidates_show_english_translation"
         }
 
         val mode = enum(R.string.show_candidates_window, MODE, PopupCandidatesMode.DISABLED)
         val layout = enum(R.string.candidates_layout, LAYOUT, PopupCandidatesLayout.AUTOMATIC)
         val position = enum(R.string.candidates_window_position, POSITION, PopupPosition.BOTTOM_LEFT)
+        val showEnglishTranslation = switch(
+            R.string.show_english_translation,
+            SHOW_ENGLISH,
+            false,
+            R.string.english_translation_description,
+        )
     }
 
     /**

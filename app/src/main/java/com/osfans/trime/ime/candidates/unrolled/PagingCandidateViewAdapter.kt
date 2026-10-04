@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.osfans.trime.core.CandidateProto
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.ThemeScope
+import com.osfans.trime.data.translations.CnEnDictManager
 import com.osfans.trime.ime.candidates.CandidateItemUi
 import com.osfans.trime.ime.candidates.CandidateViewHolder
 
@@ -55,7 +57,11 @@ open class PagingCandidateViewAdapter(
         val item = getItem(position) ?: return
         val idx = position + offset
         val highlighted = idx == highlightedIndex
-        holder.ui.update(item, highlighted)
+        val englishText =
+            if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
+                CnEnDictManager.lookup(item.text)
+            } else null
+        holder.ui.update(item, highlighted, englishText)
         holder.text = item.text
         holder.comment = item.comment
         holder.idx = idx

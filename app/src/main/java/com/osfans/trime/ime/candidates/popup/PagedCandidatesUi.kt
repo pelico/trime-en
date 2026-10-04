@@ -19,7 +19,9 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.osfans.trime.core.CandidateProto
 import com.osfans.trime.core.Candidates
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.ThemeScope
+import com.osfans.trime.data.translations.CnEnDictManager
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.recyclerview.recyclerView
 
@@ -92,7 +94,11 @@ class PagedCandidatesUi(
                 when (holder) {
                     is UiHolder.Candidate -> {
                         val candidate = item ?: return
-                        holder.ui.update(candidate, position == candidates.highlighted)
+                        val englishText =
+                            if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
+                                CnEnDictManager.lookup(candidate.text)
+                            } else null
+                        holder.ui.update(candidate, position == candidates.highlighted, englishText)
                         holder.ui.root.setOnClickListener {
                             onCandidateClick.invoke(position)
                         }

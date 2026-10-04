@@ -31,6 +31,8 @@ class LabeledCandidateItemUi(
     private val labelSize = theme.window.foreground.labelFontSize
     private val textSize = theme.window.foreground.textFontSize
     private val commentSize = theme.window.foreground.commentFontSize
+    /** 英文翻译字号：略小于 comment 字号，节省空间同时保证可读性 */
+    private val englishSize = (commentSize * 0.85f).coerceAtLeast(8f)
     private val labelFont = theme.fonts.label
     private val textFont = theme.fonts.candidate
     private val commentFont = theme.fonts.comment
@@ -58,15 +60,30 @@ class LabeledCandidateItemUi(
         builderAction: SpannableStringBuilder.() -> Unit,
     ) = inSpans(CandidateItemSpan(color, textSize, typeface), builderAction)
 
+    /**
+     * 构建候选词显示内容：
+     * - 第一行（可选）：英文翻译，小号 comment 颜色字体
+     * - 第二行：label + text + comment（原有逻辑保持不变）
+     *
+     * 单行布局通过 '\n' 实现多行显示，FlexboxLayoutManager 高度自适应，
+     * 无翻译时完全不引入换行，保持与原有布局完全一致的渲染效果。
+     */
     fun update(
         candidate: CandidateProto,
         highlighted: Boolean,
+        englishText: String? = null,
     ) {
         val labelFg = if (highlighted) highlightLabelColor else labelColor
         val textFg = if (highlighted) highlightCandidateTextColor else textColor
         val commentFg = if (highlighted) highlightCommentTextColor else commentColor
         root.text =
             buildSpannedString {
+                // 英文翻译行（条件渲染）
+                if (!englishText.isNullOrBlank()) {
+                    inSpanWith(commentFg, ctx.sp(englishSize), commentFont) { append(englishText) }
+                    append("\n")
+                }
+                // 原有 label + text + comment 布局（保持不变）
                 inSpanWith(labelFg, ctx.sp(labelSize), labelFont) { append(candidate.label) }
                 append(" ")
                 inSpanWith(textFg, ctx.sp(textSize), textFont) { append(candidate.text) }
