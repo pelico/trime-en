@@ -356,7 +356,7 @@ class AppPrefs(
         val showEnglishTranslation = switch(
             R.string.show_english_translation,
             SHOW_ENGLISH,
-            false,
+            true,
             R.string.english_translation_description,
         )
     }

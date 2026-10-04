@@ -9,9 +9,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.view.View
+import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.osfans.trime.core.CandidateProto
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.data.theme.model.GeneralStyle
@@ -53,6 +56,16 @@ class CandidateItemUi(
 
     /** 英文翻译字号：略小于 comment 字号，节省空间同时保证可读性 */
     private val englishSize = (commentSize * 0.85f).coerceAtLeast(8f)
+
+    /** 候选项默认高度（与改动前一致）。 */
+    private val candidateHeight = ctx.dp(theme.style.candidateViewHeight)
+
+    /**
+     * 显示英文翻译时使用的高度。
+     * 输入栏（bar）预留的高度本就是 `candidate_view_height + comment_height`，
+     * 因此这里可以直接借用编码提示区的那部分空间，不会造成裁剪。
+     */
+    private val expandedHeight = ctx.dp(theme.style.candidateViewHeight + theme.style.commentHeight)
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
     private val textColor: Int get() = scope.colors.candidateTextColor
@@ -116,7 +129,7 @@ class CandidateItemUi(
                 )
                 add(
                     text,
-                    lParams(wrapContent, wrapContent) {
+                    lParams(wrapContent, matchConstraints) {
                         topToBottomOf(english)
                         bottomOfParent()
                         verticalBias = 0.5f
@@ -231,6 +244,14 @@ class CandidateItemUi(
         } else {
             english.text = ""
             english.isVisible = false
+        }
+
+        // 开启英文翻译时把候选项撑高到输入栏预留的完整高度，为英文行腾出空间；
+        // 关闭时保持原有高度，外观与改动前完全一致。
+        val englishMode = AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
+        val targetHeight = if (englishMode) expandedHeight else candidateHeight
+        if (content.layoutParams?.height != targetHeight) {
+            content.updateLayoutParams<ViewGroup.LayoutParams> { height = targetHeight }
         }
     }
 }
