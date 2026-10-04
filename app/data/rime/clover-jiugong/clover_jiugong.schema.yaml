@@ -86,7 +86,7 @@ speller:
 translator:
   dictionary: clover
   prism: clover_jiugong
-  spelling_hints: 16 # ～字以內候選標註完整帶調拼音
+  spelling_hints: 0 # 关闭候选词的拼音标注（九宫格下拼音冗余，避免与 App 提供的英文翻译行互相挤占）
   enable_sentence: true
   enable_user_dict: true
   enable_encoder: true

@@ -157,11 +157,17 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                         val isEnabled = api.getRuntimeOption(option)
                         val isComposing = api.statusCached.isComposing
                         api.setRuntimeOption(option, !isEnabled)
-                        if (option == "ascii_mode" && isComposing) {
-                            api.getRawInput().takeIf { it.isNotEmpty() }?.let {
-                                service.commitText(it)
-                                api.clearComposition()
+                        if (option == "ascii_mode") {
+                            if (isComposing) {
+                                api.getRawInput().takeIf { it.isNotEmpty() }?.let {
+                                    service.commitText(it)
+                                    api.clearComposition()
+                                }
                             }
+                            // 中/英 切换时同步切换键盘：
+                            // 中文 -> ascii_keyboard（如九宫格声明的 26 键英文键盘），
+                            // 英文 -> 当前方案对应的键盘。
+                            keyboardWindow.switchKeyboard(if (isEnabled) ".default" else ".ascii")
                         }
                     }
                 }

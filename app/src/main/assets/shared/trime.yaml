@@ -1728,12 +1728,12 @@ preset_keyboards:
   # 切换方案后 Trime 会依据 schema_id 自动匹配此布局。
   #
   # 注意：Trime 中「一行」的宽度权重总和应为 100（见 Keyboard.MAX_TOTAL_WEIGHT），
-  # 每行 5 个按键，因此每个按键 width: 20。
+  # 前三行每行 5 个按键（各 width: 20），第四行为 20+20+40+20 = 100。
   clover_jiugong:
     name: 九宫格
     author: "SivanLaai (adapted from rime-pure)"
     ascii_mode: 0
-    ascii_keyboard: qwerty
+    ascii_keyboard: letter
     lock: true
     width: 20
     height: 55
@@ -1756,10 +1756,9 @@ preset_keyboards:
       - {click: '8', label: TUV, width: 20}
       - {click: '9', label: WXYZ, width: 20}
       - {click: Keyboard_symbols, label: 符, width: 20}
-      # 第四行：@ 中 空格 菜单 回车
+      # 第四行：@ 中/英 空格 回车（配色、方案改为手势，不再占用可见按键）
       - {click: '@', label: '@', width: 20}
-      - {click: Mode_switch, label: 中, width: 20}
-      - {click: space, width: 20}
-      - {click: Menu, long_click: Color_switch, width: 20}
+      - {click: Mode_switch, label: 中, long_click: Menu, swipe_up: Color_switch, width: 20}
+      - {click: space, width: 40}
       - {click: Return, long_click: CommitComment, width: 20}
 
