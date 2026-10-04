@@ -14,6 +14,7 @@ import androidx.annotation.ColorInt
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import com.osfans.trime.core.CandidateProto
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.sp
@@ -66,8 +67,8 @@ class LabeledCandidateItemUi(
      * - 第一行（可选）：英文翻译，小号 comment 颜色字体
      * - 第二行：label + text + comment（原有逻辑保持不变）
      *
-     * 单行布局通过 '\n' 实现多行显示，FlexboxLayoutManager 高度自适应，
-     * 无翻译时完全不引入换行，保持与原有布局完全一致的渲染效果。
+     * 单行布局通过 '\n' 实现多行显示，FlexboxLayoutManager 高度自适应。
+     * 开启英文翻译后所有行都会保留该行（无翻译用空格占位），因此高度一致。
      */
     fun update(
         candidate: CandidateProto,
@@ -79,9 +80,11 @@ class LabeledCandidateItemUi(
         val commentFg = if (highlighted) highlightCommentTextColor else commentColor
         root.text =
             buildSpannedString {
-                // 英文翻译行（条件渲染）
-                if (!englishText.isNullOrBlank()) {
-                    inSpanWith(commentFg, ctx.sp(englishSize), commentFont) { append(englishText) }
+                // 英文翻译行：开启该功能时始终占位（无翻译用空格），保证各行高度一致
+                if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
+                    inSpanWith(commentFg, ctx.sp(englishSize), commentFont) {
+                        append(englishText?.takeIf { it.isNotBlank() } ?: " ")
+                    }
                     append("\n")
                 }
                 // 原有 label + text + comment 布局（保持不变）

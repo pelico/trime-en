@@ -237,8 +237,11 @@ class CandidateItemUi(
         comment.setTextColor(cColor)
         comment.isVisible = commentText.isNotEmpty()
 
-        if (!englishText.isNullOrBlank()) {
-            english.text = englishText
+        // 开启英文翻译时始终保留英文行：有翻译则显示翻译，无翻译用空格占位，
+        // 避免未翻译的候选项因独占了英文行的空间而显得更大、更低。
+        val englishMode = AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
+        if (englishMode) {
+            english.text = englishText?.takeIf { it.isNotBlank() } ?: " "
             english.setTextColor(cColor)
             english.isVisible = true
         } else {
@@ -248,7 +251,6 @@ class CandidateItemUi(
 
         // 开启英文翻译时把候选项撑高到输入栏预留的完整高度，为英文行腾出空间；
         // 关闭时保持原有高度，外观与改动前完全一致。
-        val englishMode = AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()
         val targetHeight = if (englishMode) expandedHeight else candidateHeight
         if (content.layoutParams?.height != targetHeight) {
             content.updateLayoutParams<ViewGroup.LayoutParams> { height = targetHeight }
