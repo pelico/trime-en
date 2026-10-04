@@ -1726,32 +1726,40 @@ preset_keyboards:
     - {click: Return, long_click: CommitComment, width: 25.5}
   # 九宫格键盘：与预置方案 clover_jiugong（🍀️四叶草九宫格）同名，
   # 切换方案后 Trime 会依据 schema_id 自动匹配此布局。
+  #
+  # 注意：Trime 中「一行」的宽度权重总和应为 100（见 Keyboard.MAX_TOTAL_WEIGHT），
+  # 每行 5 个按键，因此每个按键 width: 20。
   clover_jiugong:
     name: 九宫格
     author: "SivanLaai (adapted from rime-pure)"
     ascii_mode: 0
-    ascii_keyboard: letter
+    ascii_keyboard: qwerty
     lock: true
-    width: 25
+    width: 20
     height: 55
     keys:
-    - {click: ',', label: '，', long_click: '?', swipe_up: '?', width: 5}
-    - {click: '1', label: 分词, composing: "'", width: 5}
-    - {click: '2', label: ABC, width: 5}
-    - {click: '3', label: DEF, width: 5}
-    - {click: BackSpace, width: 5}
-    - {click: '.', label: '。', long_click: '!', swipe_up: '!', width: 5}
-    - {click: '4', label: GHI, width: 5}
-    - {click: '5', label: JKL, width: 5}
-    - {click: '6', label: MNO, width: 5}
-    - {click: Keyboard_number, label: '123', width: 5}
-    - {click: '?', label: '？', width: 5}
-    - {click: '7', label: PQRS, width: 5}
-    - {click: '8', label: TUV, width: 5}
-    - {click: '9', label: WXYZ, width: 5}
-    - {click: Keyboard_symbols, label: 符, width: 5}
-    - {click: '@', label: '@', width: 5}
-    - {click: Mode_switch, label: 中, width: 5}
-    - {click: space, width: 5}
-    - {click: Menu, long_click: Color_switch, width: 5}
-    - {click: Return, long_click: CommitComment, width: 5}
+      # 第一行：， 分词 ABC DEF 退格
+      - {click: ',', label: '，', long_click: '?', width: 20}
+      - {click: '1', label: 分词, composing: "'", width: 20}
+      - {click: '2', label: ABC, width: 20}
+      - {click: '3', label: DEF, width: 20}
+      - {click: BackSpace, swipe_left: Clear, width: 20}
+      # 第二行：。 GHI JKL MNO 123
+      - {click: '.', label: '。', long_click: '!', width: 20}
+      - {click: '4', label: GHI, width: 20}
+      - {click: '5', label: JKL, width: 20}
+      - {click: '6', label: MNO, width: 20}
+      - {click: Keyboard_number, label: '123', width: 20}
+      # 第三行：？PQRS TUV WXYZ 符
+      - {click: '?', label: '？', width: 20}
+      - {click: '7', label: PQRS, width: 20}
+      - {click: '8', label: TUV, width: 20}
+      - {click: '9', label: WXYZ, width: 20}
+      - {click: Keyboard_symbols, label: 符, width: 20}
+      # 第四行：@ 中 空格 菜单 回车
+      - {click: '@', label: '@', width: 20}
+      - {click: Mode_switch, label: 中, width: 20}
+      - {click: space, width: 20}
+      - {click: Menu, long_click: Color_switch, width: 20}
+      - {click: Return, long_click: CommitComment, width: 20}
+
