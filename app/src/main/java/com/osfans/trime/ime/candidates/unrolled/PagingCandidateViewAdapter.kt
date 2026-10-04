@@ -60,7 +60,9 @@ open class PagingCandidateViewAdapter(
         val englishText =
             if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
                 CnEnDictManager.lookup(item.text)
-            } else null
+            } else {
+                null
+            }
         holder.ui.update(item, highlighted, englishText)
         holder.text = item.text
         holder.comment = item.comment

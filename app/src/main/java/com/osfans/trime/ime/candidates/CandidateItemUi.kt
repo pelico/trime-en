@@ -24,7 +24,6 @@ import splitties.views.dsl.constraintlayout.bottomOfParent
 import splitties.views.dsl.constraintlayout.bottomToTopOf
 import splitties.views.dsl.constraintlayout.centerHorizontally
 import splitties.views.dsl.constraintlayout.centerInParent
-import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.endToStartOf
@@ -51,6 +50,8 @@ class CandidateItemUi(
 
     private val textSize = theme.style.candidateTextSize
     private val commentSize = theme.style.commentTextSize
+
+    /** 英文翻译字号：略小于 comment 字号，节省空间同时保证可读性 */
     private val englishSize = (commentSize * 0.85f).coerceAtLeast(8f)
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
@@ -85,9 +86,9 @@ class CandidateItemUi(
         }
 
     /**
-     * 英文翻译行 —— 始终位于 text 正上方。通过 update() 动态控制显隐
-     * 和 text/comment 的约束关系，确保有翻译时布局自然撑开，无翻译时
-     * 回退到原始 comment 位置逻辑，完全兼容主题配置。
+     * 英文翻译行。布局始终包含此视图，但默认 [View.GONE]，
+     * 此时 ConstraintLayout 会将其视为零高度并保留其它视图的原始位置，
+     * 因此在没有翻译时布局与改动前完全一致。
      */
     private val english =
         view(::AutoScaleTextView) {
@@ -100,30 +101,29 @@ class CandidateItemUi(
             visibility = View.GONE
         }
 
-    // 保存 text 和 comment 的 LayoutParams 引用，用于在 update 时动态切换 top 约束
-    private lateinit var textLp: ConstraintLayout.LayoutParams
-    private lateinit var commentLp: ConstraintLayout.LayoutParams
-
     private val content = constraintLayout {
         horizontalPadding = dp(theme.style.candidatePadding)
-        // english 始终 topOfParent，有翻译时占据顶部一行，无翻译时 GONE（0 高度）
-        add(
-            english,
-            lParams(wrapContent, wrapContent) {
-                topOfParent()
-                centerHorizontally()
-            },
-        )
         when (commentPosition) {
             GeneralStyle.CommentPosition.RIGHT -> {
+                // 英文行固定在最上方，候选项（text + comment）在剩余空间垂直居中：
+                // english 为 GONE 时其高度为 0，text 的居中效果与改动前一致。
+                add(
+                    english,
+                    lParams(wrapContent, wrapContent) {
+                        topOfParent()
+                        centerHorizontally()
+                    },
+                )
                 add(
                     text,
                     lParams(wrapContent, wrapContent) {
-                        centerVertically()
+                        topToBottomOf(english)
+                        bottomOfParent()
+                        verticalBias = 0.5f
                         startOfParent()
                         endToStartOf(comment)
                         horizontalChainStyle = ConstraintLayout.LayoutParams.CHAIN_PACKED
-                    }.also { textLp = it },
+                    },
                 )
                 add(
                     comment,
@@ -132,44 +132,61 @@ class CandidateItemUi(
                         endOfParent()
                         baselineToBaselineOf(text)
                         horizontalChainStyle = ConstraintLayout.LayoutParams.CHAIN_PACKED
-                    }.also { commentLp = it },
+                    },
                 )
             }
 
             GeneralStyle.CommentPosition.TOP -> {
-                add(
-                    text,
-                    lParams(wrapContent, matchConstraints) {
-                        centerHorizontally()
-                        bottomOfParent()
-                        topToBottomOf(comment)
-                    }.also { textLp = it },
-                )
+                // 自上而下：comment（编码提示）→ english → text。
                 add(
                     comment,
                     lParams(wrapContent, matchConstraints) {
                         matchConstraintPercentHeight = 0.4f
                         topOfParent()
                         centerHorizontally()
+                        bottomToTopOf(english)
+                    },
+                )
+                add(
+                    english,
+                    lParams(wrapContent, wrapContent) {
+                        centerHorizontally()
+                        topToBottomOf(comment)
                         bottomToTopOf(text)
-                    }.also { commentLp = it },
+                    },
+                )
+                add(
+                    text,
+                    lParams(wrapContent, matchConstraints) {
+                        centerHorizontally()
+                        bottomOfParent()
+                        topToBottomOf(english)
+                    },
                 )
             }
 
             GeneralStyle.CommentPosition.OVERLAY -> {
+                // OVERLAY 模式下面板高度固定，英文行紧贴候选词上方叠加显示。
+                add(
+                    english,
+                    lParams(wrapContent, wrapContent) {
+                        centerHorizontally()
+                        bottomToTopOf(text)
+                    },
+                )
                 add(
                     text,
                     lParams(wrapContent, wrapContent) {
                         centerInParent()
                         verticalBias = candidateTextVerticalBias
-                    }.also { textLp = it },
+                    },
                 )
                 add(
                     comment,
                     lParams(wrapContent, wrapContent) {
                         centerInParent()
                         verticalBias = commentVerticalBias
-                    }.also { commentLp = it },
+                    },
                 )
             }
         }
@@ -207,79 +224,13 @@ class CandidateItemUi(
         comment.setTextColor(cColor)
         comment.isVisible = commentText.isNotEmpty()
 
-        // 英文翻译行：有翻译时显示并把 text/comment 约束到 english 下方；
-        // 无翻译时 GONE，text/comment 回到各自的原始 top 约束。
-        val hasEnglish = !englishText.isNullOrBlank()
-        if (hasEnglish) {
+        if (!englishText.isNullOrBlank()) {
             english.text = englishText
             english.setTextColor(cColor)
-            english.visibility = View.VISIBLE
-            applyEnglishTopConstraints()
+            english.isVisible = true
         } else {
-            english.visibility = View.GONE
-            applyOriginalTopConstraints()
-        }
-    }
-
-    /**
-     * 切换到有英文翻译的约束状态：text（和 TOP 模式的 comment）从 english 下方开始。
-     * 每种 commentPosition 场景下的调整策略不同：
-     * - RIGHT: text/comment 保持 centerVertically 不变，因为它们在同一行，
-     *   centerVertically 会在 english gone 时自动居中到剩余空间
-     *   （实际上 ConstraintLayout 的 centerVertically 在父容器中仍然有效，
-     *   我们只需要让 text 的 top 不越过 english 的 bottom 即可）
-     * - TOP: comment 原本 topOfParent → 改为 topToBottomOf(english)
-     *        text 原本 topToBottomOf(comment) → 保持不变（comment 已经往下挪了）
-     * - OVERLAY: text/comment centerInParent → 无需调整（居中策略自然跳过 english 的空间）
-     */
-    private fun applyEnglishTopConstraints() {
-        when (commentPosition) {
-            GeneralStyle.CommentPosition.RIGHT -> {
-                // text 的 top 约束改为 topToBottomOf(english)，确保不越过英文行
-                textLp.topToBottomOf = english.id
-                textLp.topToTop = ConstraintLayout.LayoutParams.UNSET
-                // comment 的 baselineToBaselineOf(text) 已经会跟随 text 移动，无需额外处理
-            }
-
-            GeneralStyle.CommentPosition.TOP -> {
-                // comment 原本 topOfParent → topToBottomOf(english)
-                commentLp.topToBottomOf = english.id
-                commentLp.topToTop = ConstraintLayout.LayoutParams.UNSET
-                // text 保持 topToBottomOf(comment)，会随 comment 一起下移
-            }
-
-            GeneralStyle.CommentPosition.OVERLAY -> {
-                // OVERLAY 用 centerInParent + verticalBias，保持不变
-            }
-        }
-        text.layoutParams = textLp
-        if (::commentLp.isInitialized) {
-            comment.layoutParams = commentLp
-        }
-    }
-
-    /**
-     * 切换到无英文翻译的约束状态（恢复到 CandidateItemUi 初始化时的原始约束）。
-     */
-    private fun applyOriginalTopConstraints() {
-        when (commentPosition) {
-            GeneralStyle.CommentPosition.RIGHT -> {
-                textLp.topToBottomOf = ConstraintLayout.LayoutParams.UNSET
-                textLp.topToTop = ConstraintLayout.LayoutParams.UNSET
-            }
-
-            GeneralStyle.CommentPosition.TOP -> {
-                commentLp.topToBottomOf = ConstraintLayout.LayoutParams.UNSET
-                commentLp.topToTop = ConstraintLayout.LayoutParams.UNSET
-            }
-
-            GeneralStyle.CommentPosition.OVERLAY -> {
-                // 不变
-            }
-        }
-        text.layoutParams = textLp
-        if (::commentLp.isInitialized) {
-            comment.layoutParams = commentLp
+            english.text = ""
+            english.isVisible = false
         }
     }
 }

@@ -1,0 +1,138 @@
+# Rime schema
+# encoding: utf-8
+#
+# 四叶草九宫格（clover_jiugong）
+#
+# 取自 SivanLaai/rime-pure（MIT License）的「Clover四叶草九宫拼音」方案，
+# 作为同文输入法的预置九宫格输入方案。为适配本项目的预置数据环境，
+# 仅移除了对未内置的 `emoji` 依赖方案与相关 OpenCC 额外过滤器的引用，
+# 其余拼写代数、词库、简繁切换等均保持原样。
+#
+# 说明：主题 `.trime.yaml` 中提供了同名的 `clover_jiugong` 九宫格键盘，
+# Trime 会依据 schema_id 自动匹配该键盘布局。
+
+schema:
+  schema_id: clover_jiugong
+  name: 🍀️四叶草九宫格
+  version: "0.19"
+  author:
+    - SivanLaai - https://sivanlaai.github.io
+  description: |
+    🍀️四叶草九宫格：
+    以🍀️四叶草简体拼音为基础所配置的一款适合在手机九宫格上输入的输入方案。
+  dependencies:
+    - stroke
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中, 英 ]
+  - name: full_shape
+    states: [ 半, 全 ]
+  - name: zh_simp_s2t
+    states: [ 简, 繁 ]
+    reset: 0
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator@custom_phrase
+    - reverse_lookup_translator
+    - script_translator
+  filters:
+    - simplifier
+    - uniquifier
+
+speller:
+  alphabet: 'zyxwvutsrqponmlkjihgfedcba1234567890'
+  delimiter: " '"
+  algebra:
+    - "xlit|12345|+_*^0|"
+    - erase/^xx$/
+    - abbrev/^([a-z]).+$/$1/
+    - abbrev/^([zcs]h).+$/$1/
+    - derive/^([nl])ve$/$1ue/
+    - derive/^([jqxy])u/$1v/
+    - derive/un$/uen/
+    - derive/ui$/uei/
+    - derive/iu$/iou/
+    - derive/([aeiou])ng$/$1gn/
+    - derive/([dtngkhrzcs])o(u|ng)$/$1o/
+    - derive/ong$/on/
+    - derive/ao$/oa/
+    - derive/([iu])a(o|ng?)$/a$1$2/
+    - xlit/abcdefghijklmnopqrstuvwxyz/22233344455566677778889999/
+    - derive/[+_*^0]//
+    - derive/([+_*^0])$//
+    - derive/^(.*)$/\U$1/
+
+translator:
+  dictionary: clover
+  prism: clover_jiugong
+  spelling_hints: 16 # ～字以內候選標註完整帶調拼音
+  enable_sentence: true
+  enable_user_dict: true
+  enable_encoder: true
+  encode_commit_history: true
+  max_phrase_length: 10
+  user_dict: user
+  db_class: tabledb
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  preedit_format:
+    - xform/([nl])v/$1ü/
+    - xform/([nl])ue/$1üe/
+    - xform/([jqxy])v/$1u/
+    - xform/eh/ê/
+
+custom_phrase:
+  dictionary: ""
+  user_dict: custom_phrase
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+reverse_lookup:
+  dictionary: stroke
+  enable_completion: true
+  prefix: "`"
+  suffix: "'"
+  tips: 〔笔画〕
+  preedit_format:
+    - "xlit|v|ü|"
+    - xform/iü/iv/
+    - xform/uü/uv/
+
+punctuator:
+  import_preset: symbols
+
+key_binder:
+  import_preset: default
+
+simplifier:
+  option_name: zh_simp_s2t
+  opencc_config: s2t.json
+
+recognizer:
+  import_preset: default
+  patterns:
+    punct: "^/([0-9]0?|[a-z]+)$"
+    reverse_lookup: "`[a-z]*'?$"

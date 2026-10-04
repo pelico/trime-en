@@ -36,7 +36,6 @@ object CnEnDictManager {
                 val json = Json { ignoreUnknownKeys = true }
                 val stream = appContext.assets.open(DICT_ASSET_PATH)
                 val text = stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-                @Suppress("UNCHECKED_CAST")
                 val loaded = json.decodeFromString<Map<String, String>>(text)
                 Timber.i("CnEnDictManager loaded ${loaded.size} entries")
                 loaded.also { dict = it }

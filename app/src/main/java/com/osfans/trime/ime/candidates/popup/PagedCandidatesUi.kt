@@ -97,7 +97,9 @@ class PagedCandidatesUi(
                         val englishText =
                             if (AppPrefs.defaultInstance().candidates.showEnglishTranslation.getValue()) {
                                 CnEnDictManager.lookup(candidate.text)
-                            } else null
+                            } else {
+                                null
+                            }
                         holder.ui.update(candidate, position == candidates.highlighted, englishText)
                         holder.ui.root.setOnClickListener {
                             onCandidateClick.invoke(position)

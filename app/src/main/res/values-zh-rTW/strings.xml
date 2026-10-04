@@ -218,6 +218,8 @@
     <string name="horizontal">橫向</string>
     <string name="vertical">縱向</string>
     <string name="vertical_reverse">縱向倒序</string>
+    <string name="show_english_translation">在候選詞上方顯示英文翻譯</string>
+    <string name="english_translation_description">顯示內建中英詞典的英文翻譯，例如：你好 → hello</string>
     <string name="ascii_switch_tips">切換中英文模式時顯示提示</string>
     <string name="key_double_tap_timeout">按鍵連擊逾時</string>
     <string name="key_slide_step_size">按鍵滑動步長</string>

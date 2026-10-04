@@ -31,6 +31,7 @@ class LabeledCandidateItemUi(
     private val labelSize = theme.window.foreground.labelFontSize
     private val textSize = theme.window.foreground.textFontSize
     private val commentSize = theme.window.foreground.commentFontSize
+
     /** 英文翻译字号：略小于 comment 字号，节省空间同时保证可读性 */
     private val englishSize = (commentSize * 0.85f).coerceAtLeast(8f)
     private val labelFont = theme.fonts.label
