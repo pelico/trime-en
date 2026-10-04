@@ -1759,9 +1759,9 @@ preset_keyboards:
       - {click: '8', label: TUV, long_click: {commit: '8', label: '8'}, width: 20}
       - {click: '9', label: WXYZ, long_click: {commit: '9', label: '9'}, width: 20}
       - {click: Keyboard_symbols, label: 符, width: 20}
-      # 第 4 行：@ 中/英 空格 回车（配色、方案改为手势，不再占用可见按键）
-      - {click: '@', label: '@', width: 20}
+      # 第 4 行：中/英 😀 空格 回车（@ 已移入「符」面板；配色、方案改为手势，不占用可见按键）
       - {click: Mode_switch, label: 中, long_click: Menu, swipe_up: Color_switch, width: 20}
+      - {click: liquid_keyboard_emoji, label: '😀', width: 20}
       - {click: space, label: '🐰🦕', width: 40}
       - {click: Return, long_click: CommitComment, width: 20}
 
