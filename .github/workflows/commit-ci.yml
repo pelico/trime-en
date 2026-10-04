@@ -15,11 +15,11 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build Android APK (release)
     runs-on: ubuntu-26.04
     env:
       # Only real phone ABIs are built: armeabi-v7a (旧机型) + arm64-v8a (主流机型)。
-      # 去掉 x86 / x86_64（仅模拟器使用），可显著缩短原生库编译时间。
+      # 去掉 x86 / x86_64（仅模拟器使用），可显著缩短原生库编译时间并减小体积。
       BUILD_ABI: armeabi-v7a,arm64-v8a
     steps:
       - name: Fetch source code
@@ -66,39 +66,54 @@ jobs:
         id: jni-cache
         with:
           path: "app/prebuilt"
-          key: ${{ runner.os }}-trime-jni-debug-${{ steps.cache-hash.outputs.native-cache-hash }}
+          key: ${{ runner.os }}-trime-jni-release-${{ steps.cache-hash.outputs.native-cache-hash }}
 
-      - name: Fetch submodules
-        if: ${{ !steps.jni-cache.outputs.cache-hit }}
+      - name: Setup Keystore
         run: |
-          git submodule update --init --recursive
+          cat << EOF > keystore.properties
+          keyBase64=${{ secrets.SIGNING_KEY }}
+          storePassword=${{ secrets.KEY_STORE_PASSWORD }}
+          keyAlias=${{ secrets.ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
 
-      - name: Build debug Trime
+      - name: Build release Trime
         run: |
-          make debug
+          make release
 
       - name: Add JNI cache
         if: ${{ !steps.jni-cache.outputs.cache-hit }}
-        run: cp -R app/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib app/prebuilt
+        run: cp -R app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib app/prebuilt
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: trime-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: trime-release-apk
+          path: app/build/outputs/apk/release/*.apk
           # keep 90 days
           retention-days: 90
+
+      - name: Delete previous android-latest release
+        if: github.ref == 'refs/heads/develop'
+        continue-on-error: true
+        run: gh release delete android-latest --yes --cleanup-tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish APK to latest release
         if: github.ref == 'refs/heads/develop'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: android-latest
-          name: "Android Debug APK (latest)"
+          name: "Android APK (latest, release)"
           prerelease: true
           body: |
-            Automatic Android debug APK build from the `develop` branch.
+            Automatic **release** (minified, signed) Android build from the `develop` branch.
 
             - 预置方案：🍀️四叶草九宫格 (`clover_jiugong`)
             - 候选词英文翻译显示（可在 设置 → 候选窗口 中开关）
-          files: app/build/outputs/apk/debug/*.apk
+            - 体积说明：内置华语词库 `huayu.dict.yaml` 约 7MB（压缩后），是体积主要来源
+
+            安装提示：本包签名与本仓库 fork 使用的自有签名一致；若此前安装的是官方
+            `com.osfans.trime`，需先卸载官方版再安装。
+          files: app/build/outputs/apk/release/*.apk
