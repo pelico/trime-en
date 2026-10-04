@@ -79,7 +79,10 @@ object CnEnDictManager {
      */
     fun lookup(text: String): String? {
         if (text.isBlank()) return null
-        val map = dict ?: run { warmUp(); return null }
+        val map = dict ?: run {
+            warmUp()
+            return null
+        }
         return map[text]
     }
 
@@ -87,7 +90,10 @@ object CnEnDictManager {
      * 批量查询，对一组候选文本返回各自的英文翻译（存在则含，不存在则不含）。
      */
     fun lookupAll(texts: List<String>): Map<String, String> {
-        val map = dict ?: run { warmUp(); return emptyMap() }
+        val map = dict ?: run {
+            warmUp()
+            return emptyMap()
+        }
         val result = LinkedHashMap<String, String>(texts.size)
         for (t in texts) {
             if (t.isNotBlank()) {
