@@ -1738,25 +1738,26 @@ preset_keyboards:
     width: 20
     height: 55
     keys:
-      # 第一行：， 分词 ABC DEF 退格
+      # 九宫格字母键：点按 = 正常九宫格拼音；长按 = 直接上屏对应数字（数字以小符号显示在按键左上角）。
+      # 第 1 行：， 分词(1) ABC(2) DEF(3) 退格
       - {click: ',', label: '，', long_click: '?', width: 20}
-      - {click: '1', label: 分词, composing: "'", width: 20}
-      - {click: '2', label: ABC, width: 20}
-      - {click: '3', label: DEF, width: 20}
+      - {click: '1', label: 分词, long_click: {commit: '1', label: '1'}, composing: "'", width: 20}
+      - {click: '2', label: ABC, long_click: {commit: '2', label: '2'}, width: 20}
+      - {click: '3', label: DEF, long_click: {commit: '3', label: '3'}, width: 20}
       - {click: BackSpace, swipe_left: Clear, width: 20}
-      # 第二行：。 GHI JKL MNO 123
+      # 第 2 行：。 GHI(4) JKL(5) MNO(6) 123
       - {click: '.', label: '。', long_click: '!', width: 20}
-      - {click: '4', label: GHI, width: 20}
-      - {click: '5', label: JKL, width: 20}
-      - {click: '6', label: MNO, width: 20}
+      - {click: '4', label: GHI, long_click: {commit: '4', label: '4'}, width: 20}
+      - {click: '5', label: JKL, long_click: {commit: '5', label: '5'}, width: 20}
+      - {click: '6', label: MNO, long_click: {commit: '6', label: '6'}, width: 20}
       - {click: Keyboard_number, label: '123', width: 20}
-      # 第三行：？PQRS TUV WXYZ 符
+      # 第 3 行：？ PQRS(7) TUV(8) WXYZ(9) 符
       - {click: '?', label: '？', width: 20}
-      - {click: '7', label: PQRS, width: 20}
-      - {click: '8', label: TUV, width: 20}
-      - {click: '9', label: WXYZ, width: 20}
+      - {click: '7', label: PQRS, long_click: {commit: '7', label: '7'}, width: 20}
+      - {click: '8', label: TUV, long_click: {commit: '8', label: '8'}, width: 20}
+      - {click: '9', label: WXYZ, long_click: {commit: '9', label: '9'}, width: 20}
       - {click: Keyboard_symbols, label: 符, width: 20}
-      # 第四行：@ 中/英 空格 回车（配色、方案改为手势，不再占用可见按键）
+      # 第 4 行：@ 中/英 空格 回车（配色、方案改为手势，不再占用可见按键）
       - {click: '@', label: '@', width: 20}
       - {click: Mode_switch, label: 中, long_click: Menu, swipe_up: Color_switch, width: 20}
       - {click: space, width: 40}
