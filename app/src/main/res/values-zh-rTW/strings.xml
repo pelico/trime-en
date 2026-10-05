@@ -61,6 +61,16 @@
     <string name="clipboard_output_rules">剪貼簿過濾規則</string>
     <string name="clipboard_suggestion">顯示剪貼簿建議</string>
     <string name="clipboard_suggestion_timeout">剪貼簿項目逾時</string>
+    <string name="otp">驗證碼</string>
+    <string name="otp_enable">驗證碼助手</string>
+    <string name="otp_enable_summary">識別簡訊驗證碼並支援一鍵填入</string>
+    <string name="otp_auto_copy">自動複製驗證碼</string>
+    <string name="otp_auto_copy_summary">識別到驗證碼後自動複製到剪貼簿</string>
+    <string name="otp_detect_clipboard">識別剪貼簿驗證碼</string>
+    <string name="otp_suggestion_timeout">驗證碼提示停留時間</string>
+    <string name="otp_notification_access">通知存取權</string>
+    <string name="otp_notification_access_summary">授予後鍵盤才能讀取簡訊驗證碼（開啟系統設定）</string>
+    <string name="otp_suggestion_text">驗證碼 %s</string>
     <string name="deploy_finish">部署完成</string>
     <string name="open_source_licenses">開放源代碼軟體許可</string>
     <string name="system_default">系統預設</string>

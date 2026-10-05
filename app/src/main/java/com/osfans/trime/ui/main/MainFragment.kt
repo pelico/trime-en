@@ -88,6 +88,11 @@ class MainFragment : PaddingPreferenceFragment() {
                     NavigationRoute.Clipboard,
                 )
                 addDestinationPreference(
+                    R.string.otp,
+                    R.drawable.ic_baseline_lock_24,
+                    NavigationRoute.Otp,
+                )
+                addDestinationPreference(
                     R.string.advanced,
                     R.drawable.ic_baseline_more_horiz_24,
                     NavigationRoute.Advanced,

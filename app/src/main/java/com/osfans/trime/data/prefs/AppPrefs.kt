@@ -45,6 +45,7 @@ class AppPrefs(
     val keyboard = Keyboard(shared).register()
     val candidates = Candidates(shared).register()
     val clipboard = Clipboard(shared).register()
+    val otp = Otp(shared).register()
     val advanced = Advanced(shared).register()
 
     @Keep
@@ -436,6 +437,46 @@ class AppPrefs(
             CLIPBOARD_RETURN_AFTER_PASTE,
             true,
         ) { clipboardListening.getValue() }
+    }
+
+    /**
+     * 验证码助手设置：读取短信通知 / 剪贴板中的验证码并在输入栏给出「一键填入」提示。
+     */
+    class Otp(
+        shared: SharedPreferences,
+    ) : PreferenceDelegateOwner(shared, R.string.otp) {
+        companion object {
+            const val OTP_ENABLED = "otp_enabled"
+            const val OTP_AUTO_COPY = "otp_auto_copy"
+            const val OTP_DETECT_CLIPBOARD = "otp_detect_clipboard"
+            const val OTP_SUGGESTION_TIMEOUT = "otp_suggestion_timeout"
+        }
+
+        val otpEnabled = switch(
+            R.string.otp_enable,
+            OTP_ENABLED,
+            true,
+            R.string.otp_enable_summary,
+        )
+        val otpAutoCopy = switch(
+            R.string.otp_auto_copy,
+            OTP_AUTO_COPY,
+            true,
+            R.string.otp_auto_copy_summary,
+        ) { otpEnabled.getValue() }
+        val otpDetectClipboard = switch(
+            R.string.otp_detect_clipboard,
+            OTP_DETECT_CLIPBOARD,
+            true,
+        ) { otpEnabled.getValue() }
+        val otpSuggestionTimeout = int(
+            R.string.otp_suggestion_timeout,
+            OTP_SUGGESTION_TIMEOUT,
+            60,
+            0,
+            120,
+            "s",
+        ) { otpEnabled.getValue() }
     }
 
     class Advanced(

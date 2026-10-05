@@ -35,6 +35,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:resource="@xml/method" />
         </service>
 
+        <!-- 读取短信通知以提取验证码（需用户授予「通知使用权」） -->
+        <service
+            android:name=".service.SmsOtpNotificationListener"
+            android:exported="true"
+            android:label="@string/otp"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".provider.RimeDataProvider"
             android:authorities="${applicationId}.provider"

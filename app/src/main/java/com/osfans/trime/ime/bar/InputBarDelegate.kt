@@ -25,6 +25,8 @@ import com.osfans.trime.core.RimeMessage
 import com.osfans.trime.daemon.RimeSession
 import com.osfans.trime.daemon.launchOnReady
 import com.osfans.trime.data.db.ClipboardHelper
+import com.osfans.trime.data.otp.OtpManager
+import com.osfans.trime.data.otp.OtpParser
 import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.ThemeScope
@@ -81,24 +83,77 @@ class InputBarDelegate(override val di: DI) :
 
     private val clipboardSuggestionTimeout by prefs.clipboard.clipboardSuggestionTimeout
 
+    private val otpEnabled by prefs.otp.otpEnabled
+
+    private val otpDetectClipboard by prefs.otp.otpDetectClipboard
+
+    private val otpSuggestionTimeout by prefs.otp.otpSuggestionTimeout
+
     private var clipboardTimeoutJob: Job? = null
+
+    private var otpTimeoutJob: Job? = null
 
     private var isClipboardFresh: Boolean = false
     private var isInlineSuggestionPresent: Boolean = false
+    private var isOtpFresh: Boolean = false
 
     @Keep
-    private val onClipboardUpdateListener = ClipboardHelper.OnClipboardUpdateListener {
-        if (!clipboardSuggestion) return@OnClipboardUpdateListener
+    private val onClipboardUpdateListener = ClipboardHelper.OnClipboardUpdateListener { bean ->
         service.lifecycleScope.launch {
-            if (it.text.isNullOrEmpty()) {
+            val text = bean.text
+            // 剪贴板里的验证码优先：用户从通知复制验证码后，直接给出填入提示
+            val clipboardCode =
+                if (otpEnabled && otpDetectClipboard) OtpParser.extract(text) else null
+            if (clipboardCode != null) {
+                isClipboardFresh = false
+                showOtpSuggestion(clipboardCode)
+                evalAlwaysUiState()
+                return@launch
+            }
+            if (!clipboardSuggestion) return@launch
+            if (text.isNullOrEmpty()) {
                 isClipboardFresh = false
             } else {
-                alwaysUi.clipboardUi.text.text = it.text.take(42)
+                alwaysUi.clipboardUi.text.text = text.take(42)
                 isClipboardFresh = true
                 launchClipboardTimeoutJob()
             }
             evalAlwaysUiState()
         }
+    }
+
+    @Keep
+    private val onOtpUpdateListener = OtpManager.OnCodeUpdateListener { code ->
+        service.lifecycleScope.launch {
+            showOtpSuggestion(code)
+            evalAlwaysUiState()
+        }
+    }
+
+    private fun showOtpSuggestion(code: String) {
+        alwaysUi.otpUi.text.text = context.getString(R.string.otp_suggestion_text, code)
+        isOtpFresh = true
+        launchOtpTimeoutJob()
+    }
+
+    private fun launchOtpTimeoutJob() {
+        otpTimeoutJob?.cancel()
+        val timeout = otpSuggestionTimeout * 1000L
+        if (timeout < 0L) return
+        otpTimeoutJob = service.lifecycleScope.launch {
+            delay(timeout)
+            isOtpFresh = false
+            otpTimeoutJob = null
+            evalAlwaysUiState()
+        }
+    }
+
+    private fun dismissOtpSuggestion() {
+        otpTimeoutJob?.cancel()
+        otpTimeoutJob = null
+        isOtpFresh = false
+        OtpManager.consume()
+        evalAlwaysUiState()
     }
 
     private fun launchClipboardTimeoutJob() {
@@ -116,6 +171,7 @@ class InputBarDelegate(override val di: DI) :
     private fun evalAlwaysUiState() {
         val newState =
             when {
+                isOtpFresh -> AlwaysUi.State.Otp
                 isClipboardFresh -> AlwaysUi.State.Clipboard
                 isInlineSuggestionPresent -> AlwaysUi.State.InlineSuggestion
                 else -> AlwaysUi.State.Toolbar
@@ -157,6 +213,13 @@ class InputBarDelegate(override val di: DI) :
             }
             clipboardUi.dismiss.setOnClickListener {
                 dismissClipboardSuggestion()
+            }
+            otpUi.suggestionView.setOnClickListener {
+                OtpManager.lastCode?.let { service.commitText(it) }
+                dismissOtpSuggestion()
+            }
+            otpUi.dismiss.setOnClickListener {
+                dismissOtpSuggestion()
             }
         }
     }
@@ -262,6 +325,7 @@ class InputBarDelegate(override val di: DI) :
 
             evalAlwaysUiState()
             ClipboardHelper.addOnUpdateListener(onClipboardUpdateListener)
+            OtpManager.addOnCodeUpdateListener(onOtpUpdateListener)
             syncToolbarOptionStates()
         }
     }

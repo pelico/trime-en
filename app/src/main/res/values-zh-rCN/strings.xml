@@ -58,6 +58,16 @@
     <string name="clipboard_output_rules">剪贴板过滤规则</string>
     <string name="clipboard_suggestion">显示剪贴板提示</string>
     <string name="clipboard_suggestion_timeout">剪贴板提示超时</string>
+    <string name="otp">验证码</string>
+    <string name="otp_enable">验证码助手</string>
+    <string name="otp_enable_summary">识别短信验证码并支持一键填入</string>
+    <string name="otp_auto_copy">自动复制验证码</string>
+    <string name="otp_auto_copy_summary">识别到验证码后自动复制到剪贴板</string>
+    <string name="otp_detect_clipboard">识别剪贴板验证码</string>
+    <string name="otp_suggestion_timeout">验证码提示停留时间</string>
+    <string name="otp_notification_access">通知使用权</string>
+    <string name="otp_notification_access_summary">授予后键盘才能读取短信验证码（打开系统设置）</string>
+    <string name="otp_suggestion_text">验证码 %s</string>
     <string name="deploy_finish">部署完成</string>
     <string name="system_default">系统默认</string>
     <string name="key_swipe_travel">触发按键滑动手势的距离</string>
