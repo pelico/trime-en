@@ -55,6 +55,18 @@ object DataManager {
           - schema: clover_jiugong
     """
 
+    /**
+     * 旧版本首次安装时自动写入的方案列表，引用了已被移除的 luna_pinyin* 词库。
+     * 未手工改动过 [DEFAULT_CUSTOM_FILE_NAME] 的用户，其内容与此完全一致；
+     * 升级后必须迁移，否则 Rime 找不到方案并报 "missing input schema"。
+     */
+    private const val LEGACY_SCHEMA_LIST_CUSTOM_PATCH = """
+      patch:
+        schema_list:
+          - schema: luna_pinyin
+          - schema: luna_pinyin_simp
+    """
+
     private val lock = ReentrantLock()
 
     private val json by lazy { Json }
@@ -160,10 +172,14 @@ object DataManager {
         ResourceUtils.copyFile(DATA_CHECKSUMS_NAME, dataDir.resolve(DATA_CHECKSUMS_NAME).absolutePath)
 
         val custom = userDataDir.resolve(DEFAULT_CUSTOM_FILE_NAME)
+        val schemaListPatch = SCHEMA_LIST_CUSTOM_PATCH.trimIndent()
         if (!custom.exists()) {
             if (custom.createNewFile()) {
-                custom.writeText(SCHEMA_LIST_CUSTOM_PATCH.trimIndent())
+                custom.writeText(schemaListPatch)
             }
+        } else if (custom.readText().trim() == LEGACY_SCHEMA_LIST_CUSTOM_PATCH.trimIndent()) {
+            custom.writeText(schemaListPatch)
+            Timber.i("Migrated legacy default.custom.yaml schema_list to clover_jiugong")
         }
 
         Timber.d("Synced!")
