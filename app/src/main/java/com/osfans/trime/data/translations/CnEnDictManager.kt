@@ -76,10 +76,12 @@ object CnEnDictManager {
             var hi = offsets.size - 1
             while (lo <= hi) {
                 val mid = (lo + hi) ushr 1
+                // compareKeyAt 返回“词典 key 与 query 的比较结果”：
+                // 为负说明词典 key 更小，目标在右半区，反之在左半区。
                 when (val cmp = compareKeyAt(offsets[mid], query)) {
                     0 -> return valueAt(offsets[mid])
-                    in Int.MIN_VALUE until 0 -> hi = mid - 1
-                    else -> lo = mid + 1
+                    in Int.MIN_VALUE until 0 -> lo = mid + 1
+                    else -> hi = mid - 1
                 }
             }
             return null
