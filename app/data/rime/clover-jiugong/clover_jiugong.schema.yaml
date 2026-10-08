@@ -65,6 +65,7 @@ engine:
     - predict_translator
     - punct_translator
     - table_translator@custom_phrase
+    - table_translator@english
     - reverse_lookup_translator
     - script_translator
   filters:
@@ -141,6 +142,17 @@ custom_phrase:
   enable_completion: false
   enable_sentence: false
   initial_quality: 1
+
+# 英文混输：词库 english.dict.yaml 的词条码即英文单词本身，
+# 经 speller/algebra 统一映射为九宫格数字码，故按数字键位即可候选出英文词。
+english:
+  dictionary: english
+  enable_completion: false
+  enable_sentence: false
+  enable_user_dict: false
+  initial_quality: 1.1
+  comment_format:
+    - xform/.*// # 清空提示码（无需展示英文的拼音/码提示）
 
 reverse_lookup:
   dictionary: stroke
