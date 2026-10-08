@@ -1,0 +1,42 @@
+# Rime schema
+# encoding: utf-8
+#
+# english（英文混输·次方案）
+#
+# 本方案不直接对外使用，仅作为主方案 clover_jiugong 的「次翻译器依赖」存在：
+# 主方案在 schema/dependencies 中声明 english，librime 部署时便会据此把
+# english.dict.yaml 编译为 english.table.bin（词条）与 english.prism.bin（编码索引）。
+# 若不在 dependencies 中声明，主方案里挂载的 table_translator@english 会因缺少
+# 已编译词库而无法产生英文候选——这正是之前「没有英文候选词」的原因。
+#
+# 词条码即英文单词本身，speller/algebra 统一映射为九宫格数字码，
+# 与主方案键位一致：例如 ai -> 24，在九宫格上按「2 4」即可候选出 AI。
+# 本方案不会出现在输入方案的选单中（dependencies 只编译、不注册）。
+
+schema:
+  schema_id: english
+  name: English (mix-in)
+  version: "1.0"
+
+engine:
+  processors:
+    - speller
+    - selector
+    - navigator
+  segmentors:
+    - abc_segmentor
+    - fallback_segmentor
+  translators:
+    - table_translator
+  filters:
+    - uniquifier
+
+speller:
+  alphabet: 'zyxwvutsrqponmlkjihgfedcba1234567890'
+  algebra:
+    - xlit/abcdefghijklmnopqrstuvwxyz/22233344455566677778889999/
+
+translator:
+  dictionary: english
+  enable_completion: false
+  enable_sentence: false

@@ -23,6 +23,10 @@ schema:
   schema_id: clover_jiugong
   name: 🍀️四叶草九宫格
   version: "0.19"
+  # 声明英文次翻译器依赖：librime 部署时才会编译 english.dict.yaml，
+  # 生成 table_translator@english 运行所需的 english.table.bin / english.prism.bin。
+  dependencies:
+    - english
   author:
     - SivanLaai - https://sivanlaai.github.io
   description: |
