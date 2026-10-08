@@ -12,6 +12,12 @@
 #
 # 说明：主题 `.trime.yaml` 中提供了同名的 `clover_jiugong` 九宫格键盘，
 # Trime 会依据 schema_id 自动匹配该键盘布局。
+#
+# 联想（下一词预测）：由编译进本项目的 librime-predict 插件提供，
+# 预测数据为同目录下的 `predict.db`。该数据取自第三方仓库
+# klchen0112/rime-combo-ice-pinyin 的 wanxiang-lts-zh-predict.db
+# （疑似源自「万象拼音」amzxyz/rime-wanxiang，CC-BY-4.0），原仓库未声明许可证，
+# 使用与再分发前请自行评估，详见仓库根目录 ATTRIBUTION.md。
 
 schema:
   schema_id: clover_jiugong
@@ -34,11 +40,15 @@ switches:
     reset: 0
   - name: ascii_punct
     states: [ 。，, ．， ]
+  - name: prediction
+    states: [ 预测关, 预测开 ]
+    reset: 1
 
 engine:
   processors:
     - ascii_composer
     - recognizer
+    - predictor
     - key_binder
     - speller
     - punctuator
@@ -52,6 +62,7 @@ engine:
     - punct_segmentor
     - fallback_segmentor
   translators:
+    - predict_translator
     - punct_translator
     - table_translator@custom_phrase
     - reverse_lookup_translator
@@ -59,6 +70,13 @@ engine:
   filters:
     - simplifier
     - uniquifier
+
+# 联想（librime-predict）配置：db 为共享目录下的预测词库，
+# max_candidates 限制每次预测候选数，max_iterations 限制连续预测次数。
+predictor:
+  db: predict.db
+  max_candidates: 5
+  max_iterations: 1
 
 speller:
   alphabet: 'zyxwvutsrqponmlkjihgfedcba1234567890'
@@ -78,6 +96,20 @@ speller:
     - derive/ong$/on/
     - derive/ao$/oa/
     - derive/([iu])a(o|ng?)$/a$1$2/
+    # 模糊音（默认开启）。规则取自 rime-ice 的常见模糊音，须置于下方数字映射之前。
+    # 声母：zh/ch/sh 与 z/c/s 互模糊
+    - derive/^([zcs])h/$1/
+    - derive/^([zcs])([^h])/$1h$2/
+    # 声母：n 与 l 互模糊
+    - derive/^n/l/
+    - derive/^l/n/
+    # 韵母：前后鼻音互模糊（an↔ang、en↔eng、in↔ing）
+    - derive/ang$/an/
+    - derive/an$/ang/
+    - derive/eng$/en/
+    - derive/en$/eng/
+    - derive/ing$/in/
+    - derive/in$/ing/
     - xlit/abcdefghijklmnopqrstuvwxyz/22233344455566677778889999/
     - derive/[+_*^0]//
     - derive/([+_*^0])$//
