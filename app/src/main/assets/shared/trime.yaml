@@ -181,7 +181,10 @@ preset_color_schemes:
     # 功能键（退格/回车/123/符号/中英）为灰键，高亮候选以品牌蓝文字标示。
     keyboard_back_color: 0xffd0d3dc #鍵盤區背景
     key_back_color: 0xffffffff #字母鍵/候選鍵：純白
-    key_border_color: 0xffffffff #按鍵邊框（與鍵同色，即無邊框）
+    key_border_color: 0xffe4e7ec #字母鍵邊框：淺灰描邊，做輕微立體感
+    off_key_border_color: 0xff99a0b0 #功能鍵邊框：比鍵面稍深
+    hilited_key_border_color: 0xffd3d7de #字母鍵按下時邊框
+    hilited_off_key_border_color: 0xff8b93a3 #功能鍵按下時邊框
     key_text_color: 0xff000000 #按鍵文字
     key_symbol_color: 0xff86898e #按鍵角標/符號（如九宮格上的小數字）
     off_key_back_color: 0xffa8afbf #功能鍵背景（退格/回車/123/符號/中英）
@@ -1783,6 +1786,12 @@ preset_keyboards:
     lock: true
     width: 20
     height: 55
+    # 间距与立体感：仅作用于本九宫格键盘，覆盖全局 style 的 1px 间距。
+    # Trime 不支持按键投影，用 1dp 浅灰描边 + 圆角近似轻微立体感。
+    horizontal_gap: 3
+    vertical_gap: 3
+    round_corner: 8
+    key_border: 1
     keys:
       # 九宫格字母键：点按 = 正常九宫格拼音；长按 = 直接上屏对应数字（数字以小符号显示在按键左上角）。
       # 第 1 行：， 分词(1) ABC(2) DEF(3) 退格
