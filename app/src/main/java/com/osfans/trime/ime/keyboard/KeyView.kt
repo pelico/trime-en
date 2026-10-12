@@ -8,6 +8,7 @@ package com.osfans.trime.ime.keyboard
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
@@ -16,6 +17,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.utils.sizeDp
+import com.osfans.trime.data.theme.ColorManager
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.popup.PopupAction
@@ -52,6 +54,9 @@ class KeyView(
         textAlign = Paint.Align.CENTER
     }
 
+    // 用于绘制按键下方的柔和投影（仅当键盘启用 shadow_radius 时使用）。
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
     private var cachedIcon: IconicsDrawable? = null
     private var cachedIconName: String? = null
 
@@ -72,6 +77,10 @@ class KeyView(
 
     init {
         setWillNotDraw(false)
+        // setShadowLayer 的模糊投影需要软件渲染层，否则硬件加速下不生效。
+        if (keyboard.shadowRadius > 0f) {
+            setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+        }
         isRepeatable = key.click?.isRepeatable ?: false
         isSlideCursor = key.click?.isSlideCursor ?: false
         isSlideDelete = key.click?.isSlideDelete ?: false
@@ -293,17 +302,40 @@ class KeyView(
     private fun drawBackground(canvas: Canvas, k: Key) {
         val bg = k.getBackgroundDrawable() ?: return
 
+        val left = paddingLeft
+        val top = paddingTop
+        val right = width - paddingRight
+        val bottom = height - paddingBottom
+        val corner = k.roundCorner.takeIf { it > 0f }?.let { dp(it) } ?: 0f
+
         if (bg is GradientDrawable) {
             k.roundCorner.takeIf { it > 0f }?.let { bg.cornerRadius = dp(it) }
             k.keyBorder.takeIf { it > 0 }?.let { bg.setStroke(dp(it), k.getBorderColor()) }
         }
 
-        bg.setBounds(
-            paddingLeft,
-            paddingTop,
-            width - paddingRight,
-            height - paddingBottom,
-        )
+        // 位于按键下方的柔和投影，由键盘级 shadow_radius 控制（0 = 不投影）。
+        val shadowRadius = keyboard.shadowRadius
+        if (shadowRadius > 0f && !isPressed) {
+            val shadowColor =
+                runCatching { ColorManager.getColor("shadow_color") }
+                    .getOrDefault(Color.TRANSPARENT)
+            val blur = dp(shadowRadius)
+            shadowPaint.reset()
+            shadowPaint.isAntiAlias = true
+            shadowPaint.color = shadowColor
+            shadowPaint.setShadowLayer(blur, 0f, dp(shadowRadius * 0.5f), shadowColor)
+            canvas.drawRoundRect(
+                left.toFloat(),
+                top.toFloat(),
+                right.toFloat(),
+                bottom.toFloat(),
+                corner,
+                corner,
+                shadowPaint,
+            )
+        }
+
+        bg.setBounds(left, top, right, bottom)
         bg.draw(canvas)
     }
 

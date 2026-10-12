@@ -42,6 +42,8 @@ class KeyboardView(
 
     init {
         setWillNotDraw(false)
+        // 允许按键在其边界外绘制投影，避免被裁剪。
+        clipChildren = false
         buildKeyViews()
     }
 

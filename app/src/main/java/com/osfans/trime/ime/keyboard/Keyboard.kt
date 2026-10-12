@@ -49,6 +49,10 @@ class Keyboard(
     val keyBorder: Int =
         resolveNonNegative(selfConfig?.keyBorder, theme.style.keyBorder)
 
+    /** 默認按鍵投影半徑（0 = 不投影） */
+    val shadowRadius: Float =
+        resolveNonNegative(selfConfig?.shadowRadius, theme.style.shadowRadius)
+
     /** 鍵盤的Shift鍵  */
     var mShiftKey: Key? = null
     var mCtrlKey: Key? = null

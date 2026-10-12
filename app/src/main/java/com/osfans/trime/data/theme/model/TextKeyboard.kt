@@ -21,6 +21,7 @@ data class TextKeyboard(
     val verticalGap: Int = 0,
     val roundCorner: Float = -1f,
     val keyBorder: Int = -1,
+    val shadowRadius: Float = -1f,
     val columns: Int = 30,
     val asciiMode: Int = 1,
     val resetAsciiMode: Boolean = false,
