@@ -173,7 +173,14 @@ punctuator:
   import_preset: symbols
 
 key_binder:
-  import_preset: default
+  # 不继承 prelude 的默认预设：其中的 paging_with_comma_period 把 period 绑定为
+  # 「when: has_menu 时翻页」。联想候选一出现即满足 has_menu，于是点句号会先被
+  # 当成 Page_Down 吞掉，句号始终上不了屏；逗号用的是 when: paging，单页时不触发，
+  # 所以只有句号异常。九宫格上已有独立的 ，/。 按键，这里不再用逗号/句号翻页，
+  # 只保留 -/= 翻页，确保标点键任何时候都能正常上屏。
+  bindings:
+    - { when: has_menu, accept: minus, send: Page_Up }
+    - { when: has_menu, accept: equal, send: Page_Down }
 
 simplifier:
   option_name: zh_simp_s2t
