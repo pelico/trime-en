@@ -27,7 +27,7 @@ class ThemePrefs(
         string(
             R.string.normal_mode_color,
             NORMAL_MODE_COLOR,
-            "default",
+            "clover_light",
             R.string.normal_mode_color_summary,
         )
 

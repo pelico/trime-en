@@ -174,6 +174,50 @@ preset_color_schemes:
     text_color: 0x5a676e #編碼
     text_back_color: 0xcce4e7e9 #編碼區背景
 
+  clover_light:
+    name: 清爽九宫格／Clover Light #方案名稱
+    author: trime-en #作者資訊
+    # 参考主流手机输入法九宫格的浅色观感：浅灰蓝键盘底 + 纯白按键，
+    # 功能键（退格/回车/123/符号/中英）为灰键，高亮候选以品牌蓝文字标示。
+    keyboard_back_color: 0xffd0d3dc #鍵盤區背景
+    key_back_color: 0xffffffff #字母鍵/候選鍵：純白
+    key_border_color: 0xffffffff #按鍵邊框（與鍵同色，即無邊框）
+    key_text_color: 0xff000000 #按鍵文字
+    key_symbol_color: 0xff86898e #按鍵角標/符號（如九宮格上的小數字）
+    off_key_back_color: 0xffa8afbf #功能鍵背景（退格/回車/123/符號/中英）
+    off_key_text_color: 0xff000000 #功能鍵文字
+    on_key_back_color: 0xff0a5cff #功能鍵開啟狀態背景（如英文模式）
+    on_key_text_color: 0xffffffff #功能鍵開啟狀態文字
+    hilited_key_back_color: 0xffdfe3ea #白鍵按下背景
+    hilited_off_key_back_color: 0xff99a0b2 #功能鍵按下背景
+    back_color: 0xffffffff #候選區背景
+    border_color: 0xffe3e6ec #邊框
+    candidate_separator_color: 0xffe9ecf1 #候選分割線
+    candidate_text_color: 0xff000000 #候選文字
+    comment_text_color: 0xff86898e #提示
+    label_color: 0xff86898e #候選序號
+    hilited_candidate_text_color: 0xff0a5cff #標明候選文字（品牌藍）
+    hilited_candidate_back_color: 0xffffffff #標明候選背景（保持白底，僅用藍字標示）
+    hilited_label_color: 0xff0a5cff #標明候選序號
+    hilited_comment_text_color: 0xff5b93ff #標明提示
+    text_color: 0xff000000 #編碼
+    text_back_color: 0xfff2f4f8 #編碼區背景
+    hilited_text_color: 0xff0a5cff #標明編碼
+    hilited_back_color: 0xffeef3fb #標明編碼背景
+    candidate_background: 0xffffffff #候選欄整體背景
+    root_background: 0xffffffff #整個鍵盤區+候選欄背景
+    keyboard_background: 0xffd0d3dc #鍵盤區背景（別名，供新鍵使用）
+    liquid_keyboard_background: 0xfff5f6f8 #liquidKeyboard背景
+    long_text_back_color: 0xfff5f6f8 #長文本按鍵背景（剪貼板）
+    long_text_color: 0xff000000 #長文本按鍵文字
+    popup_back_color: 0xffffffff #長按彈出背景
+    popup_text_color: 0xff000000 #長按彈出文字
+    hilited_popup_back_color: 0xff0a5cff #長按彈出選中背景
+    hilited_popup_text_color: 0xffffffff #長按彈出選中文字
+    preview_back_color: 0xffa8afbf #按鍵提示背景
+    preview_text_color: 0xffffffff #按鍵提示文字
+    shadow_color: 0xffd0d3dc #按鍵陰影
+
   aqua:
     name: 碧水／Aqua
     author: 佛振 <chen.sst@gmail.com>
