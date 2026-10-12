@@ -925,7 +925,7 @@ preset_keys:
   Return2: {label: 回车, send: Return }
   Hide: {label: 隱藏, send: BACK}
   BackSpace: {label: 退格, repeatable: true, send: BackSpace}
-  space: {repeatable: false, functional: false, send: space}
+  space: {label: '🐰🦕', repeatable: false, functional: false, send: space}
   space1: {label: 空格, repeatable: false, functional: false, send: space}
   Escape: {label: Esc, send: Escape}
   Home: {label: 行首, send: Home}
