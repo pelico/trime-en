@@ -129,20 +129,46 @@ class SwitchOptionEntryUi(
     }
 
     fun setEntry(entry: SwitchOptionEntry) {
+        val enabled = (entry as? SwitchOptionEntry.Custom)?.enabled == true
+        // 开启的开关复用键盘功能键的开启配色（蓝底白字），未开启保持普通按键样式
+        bkg.background =
+            if (enabled) {
+                scope.decorDrawable(
+                    "on_key_back_color",
+                    "on_key_border_color",
+                    ctx.dp(theme.style.keyBorder),
+                    ctx.dp(theme.style.roundCorner),
+                )
+            } else {
+                scope.decorDrawable(
+                    "key_back_color",
+                    "key_border_color",
+                    ctx.dp(theme.style.keyBorder),
+                    ctx.dp(theme.style.roundCorner),
+                )
+            }
+        val textColor =
+            if (enabled) {
+                runCatching { scope.color("on_key_text_color") }.getOrNull()
+                    ?: scope.colors.keyTextColor
+            } else {
+                scope.colors.keyTextColor
+            }
         if (entry.icon != 0) {
             icon.visibility = View.VISIBLE
             textIcon.visibility = View.GONE
             icon.imageDrawable = ctx.drawable(entry.icon)!!.apply {
                 mutate()
-                setTint(scope.colors.keyTextColor)
+                setTint(textColor)
             }
         } else {
             icon.visibility = View.GONE
             textIcon.visibility = View.VISIBLE
             textIcon.text = getFirstCharacter(entry.label)
-            textIcon.setTextColor(scope.colors.keyTextColor)
+            textIcon.setTextColor(textColor)
         }
         label.text = entry.label
+        label.setTextColor(textColor)
     }
 
     private fun getFirstCharacter(s: String): String {

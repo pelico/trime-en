@@ -27,6 +27,7 @@ sealed class SwitchOptionEntry(
         val switch: RimeSchema.Switch,
         label: String,
         icon: Int,
+        val enabled: Boolean,
     ) : SwitchOptionEntry(label, icon)
 
     companion object {
@@ -37,14 +38,13 @@ sealed class SwitchOptionEntry(
                 if (labels.size != 2) return null
                 val (disabledText, enabledText) = labels
                 val value = rime.run { getRuntimeOption(it.name) }
-                val label = if (value) "$enabledText → $disabledText" else "$disabledText → $enabledText"
-                Custom(it, label, 0)
+                // 标签直接显示当前状态，配合开启态高亮背景，让开关状态一目了然
+                Custom(it, if (value) enabledText else disabledText, 0, value)
             } else {
                 val options = it.options
                 if (options.size != labels.size) return null
                 val index = options.indexOfFirst { rime.run { getRuntimeOption(it) } }
-                val label = labels[if (index >= 0) index else 0]
-                Custom(it, label, 0)
+                Custom(it, labels[if (index >= 0) index else 0], 0, index >= 0)
             }
         }
     }
