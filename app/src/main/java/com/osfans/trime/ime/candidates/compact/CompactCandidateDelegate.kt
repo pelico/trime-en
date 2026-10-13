@@ -23,7 +23,10 @@ import com.osfans.trime.ime.bar.InputBarDelegate
 import com.osfans.trime.ime.bar.UnrollButtonStateMachine
 import com.osfans.trime.ime.broadcast.InputBroadcastReceiver
 import com.osfans.trime.ime.candidates.unrolled.decoration.FlexboxVerticalDecoration
+import com.osfans.trime.ime.candidates.unrolled.window.BaseUnrolledCandidateWindow
 import com.osfans.trime.ime.core.InputView
+import com.osfans.trime.ime.keyboard.KeyboardWindow
+import com.osfans.trime.ime.window.BoardWindowManager
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -42,6 +45,7 @@ class CompactCandidateDelegate(override val di: DI) :
     private val scope: ThemeScope by instance()
     private val inputView: InputView by instance()
     private val bar: InputBarDelegate by instance()
+    private val windowManager: BoardWindowManager by instance()
 
     private val theme: Theme
         get() = scope.theme
@@ -97,6 +101,10 @@ class CompactCandidateDelegate(override val di: DI) :
         CompactCandidateViewAdapter(scope).apply {
             setOnItemClickListener { _, _, position ->
                 rime.launchOnReady { it.selectCandidate(position, global = true) }
+                // 候选面板处于展开状态时，选字后同样自动收回
+                if (windowManager.currentWindow is BaseUnrolledCandidateWindow) {
+                    windowManager.attachWindow(KeyboardWindow)
+                }
             }
             setOnItemLongClickListener { _, view, position ->
                 inputView.showCandidateActionMenu(position, items[position].text, view, global = true)

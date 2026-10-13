@@ -28,7 +28,8 @@ class BoardWindowManager(override val di: DI) : DIAware {
 
     private val cachedResidentWindows = mutableMapOf<ResidentWindow.Key, Pair<BoardWindow, View?>>()
 
-    private var currentWindow: BoardWindow? = null
+    var currentWindow: BoardWindow? = null
+        private set
     private var currentView: View? = null
 
     private fun prepareAnimation(

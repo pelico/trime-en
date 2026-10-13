@@ -140,6 +140,8 @@ abstract class BaseUnrolledCandidateWindow(di: DI) :
         holder.itemView.run {
             setOnClickListener { _ ->
                 rime.launchOnReady { it.selectCandidate(holder.idx, global = true) }
+                // 选字后自动收回展开的候选面板，回到键盘
+                windowManager.attachWindow(KeyboardWindow)
             }
             setOnLongClickListener { view ->
                 inputView.showCandidateActionMenu(holder.idx, holder.text, view, global = true)
