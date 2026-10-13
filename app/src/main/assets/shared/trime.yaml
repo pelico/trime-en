@@ -1063,15 +1063,15 @@ preset_keyboards:
       - {click: 'n', long_click: Insert}
       - {click: 'm', long_click: Delete}
       - {click: ',', long_click: '<'}
-      - {click: '.', long_click: '>'}
-      - {click: '/', long_click: '?'}
+      - {click: '.', long_click: '/'}
+      # 退格统一放在右上方向：z 行末尾，与九宫格/数字键盘一致（参考 Gboard/iOS 26 键）
+      - {click: BackSpace}
+      - {click: Mode_switch, long_click: Menu}
       - {click: Shift_L}
       - {click: Keyboard_symbols, long_click: Keyboard_number}
-      - {click: Mode_switch, long_click: Menu}
-      - {click: space, label: '🐰🦕', width: 30}
+      - {click: space, label: '🐰🦕', width: 35}
       - {click: "'", long_click: '"'}
-      - {click: BackSpace, width: 15}
-      - {click: Return, composing: Return1, long_click: CommitComment, width: 15}
+      - {click: Return, composing: Return1, long_click: CommitComment, width: 25}
   mini:
     name: 精简键盘
     author: "tumuyan"
@@ -1325,7 +1325,8 @@ preset_keyboards:
     - {click: 'KP_1'}
     - {click: 'KP_2'}
     - {click: 'KP_3'}
-    - {click: '#'}
+    # 退格统一放在右上角，与九宫格一致
+    - {click: BackSpace}
     - {click: '-'}
     - {click: 'KP_4'}
     - {click: 'KP_5'}
@@ -1337,14 +1338,13 @@ preset_keyboards:
     - {click: 'KP_9'}
     - {click: ':'}
     - {click: '/'}
-    - {click: '±'}
+    - {click: '#', long_click: '±'}
     - {click: 'KP_0'}
     - {click: '.'}
     - {click: ','}
     - {click: '='}
     - {click: Keyboard_default, long_click: Keyboard_symbols}
-    - {click: space, label: '🐰🦕'}
-    - {click: BackSpace}
+    - {click: space, label: '🐰🦕', width: 40}
     - {click: Return}
   symbols:
     name: 符號

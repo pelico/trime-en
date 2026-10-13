@@ -134,7 +134,7 @@ class ThemeGoldenTest :
                     default.height shouldBe 44f
                     default.lock shouldBe true
                     default.asciiMode shouldBe 0
-                    default.keys.size shouldBe 47
+                    default.keys.size shouldBe 46
                     default.keys.first().click shouldBe
                         KeyActionToken.Plain("1")
                     default.keys.first().longClick shouldBe
