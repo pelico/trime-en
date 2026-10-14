@@ -161,8 +161,11 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                             if (isComposing) {
                                 api.getRawInput().takeIf { it.isNotEmpty() }?.let {
                                     service.commitText(it)
-                                    api.clearComposition()
                                 }
+                                // 组合里可能只剩联想段（librime-predict，此时 raw input
+                                // 为空），同样需要清掉；直接 clearComposition 会被
+                                // predictor 立即重建联想段，故临时关闭 prediction 再清
+                                api.clearCompositionWithoutPrediction()
                             }
                             // 中/英 切换时同步切换键盘：
                             // 中文 -> ascii_keyboard（如九宫格声明的 26 键英文键盘），

@@ -185,7 +185,10 @@ class KeyboardWindow(di: DI) :
 
             if (currentMode != targetMode) {
                 service.postRimeJob {
-                    commitComposition()
+                    // 组合里可能只剩联想段（librime-predict 在上屏后把联想候选挂在
+                    // composition 上）：commitComposition 会把第一条联想词提交上屏，
+                    // 需改为丢弃；有真实拼音输入时仍照常提交。
+                    commitOrDropPrediction()
                     setRuntimeOption("ascii_mode", targetMode)
                 }
             }

@@ -606,7 +606,9 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         }
         composingText = ""
         postRimeJob {
-            clearComposition()
+            // 直接 clearComposition 会被 librime-predict 的 predictor（监听 update
+            // 通知）立即按最近上屏文本重建联想段，联想词会跨输入框/跨应用残留
+            clearCompositionWithoutPrediction()
         }
         InputFeedbackManager.finishInput()
     }
