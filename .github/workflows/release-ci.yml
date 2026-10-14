@@ -10,6 +10,11 @@ on:
       - 'v*'
 env:
   CI_NAME: Release CI
+# Creating the GitHub Release and uploading the APK needs contents:write;
+# the repo default GITHUB_TOKEN is read-only ("Resource not accessible by
+# integration" without this).
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-26.04
