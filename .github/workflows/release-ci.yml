@@ -65,30 +65,31 @@ jobs:
         if: ${{ !steps.jni-cache.outputs.cache-hit }}
         run: cp -R app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib app/prebuilt
 
+      # Generate the changelog with git and write it straight to a file.
+      # Do NOT route a changelog of this size through ${{ }} outputs, CLI args
+      # or env vars: a single expanded string over 128KiB trips
+      # MAX_ARG_STRLEN ("Argument list too long") when the runner execs the
+      # step process. Shell redirection has no such limit, and tail caps the
+      # body to the last 200 commits so the release page stays readable.
       - name: Build changelog
-        id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v6
-        with:
-          commitMode: true
-          configurationJson: |
-            {
-              "template": "Change log from #{{FROM_TAG}} to #{{TO_TAG}}: #{{RELEASE_DIFF}}\n#{{UNCATEGORIZED}}",
-              "pr_template": "- [#{{MERGE_SHA}}] - #{{TITLE}}"
-            }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Write changelog
-        env:
-          CHANGELOG: ${{ steps.build_changelog.outputs.changelog }}
-        run: printf '%s' "$CHANGELOG" > "${{ github.workspace }}/release-body.md"
+        run: |
+          TO_TAG="${GITHUB_REF_NAME}"
+          FROM_TAG="$(git describe --tags --abbrev=0 "${TO_TAG}^" 2>/dev/null || true)"
+          {
+            if [ -n "$FROM_TAG" ]; then
+              echo "Change log from $FROM_TAG to $TO_TAG:"
+              git log --pretty=format:"- [%h] - %s" "$FROM_TAG..$TO_TAG" || true
+            else
+              echo "Change log for $TO_TAG:"
+              git log --pretty=format:"- [%h] - %s" "$TO_TAG" || true
+            fi
+            echo ""
+          } | tail -n 201 > "${{ github.workspace }}/release-body.md"
 
       - name: Create Stable release
         uses: softprops/action-gh-release@v3
         with:
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
-          # body as a CLI arg hits "Argument list too long" (MAX_ARG_STRLEN 128KiB)
-          # when the changelog spans many commits; pass it via a file instead
           body_path: ${{ github.workspace }}/release-body.md
           working_directory: "app/build/outputs/apk/release/"
           files: |
