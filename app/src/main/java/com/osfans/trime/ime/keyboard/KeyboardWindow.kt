@@ -191,6 +191,12 @@ class KeyboardWindow(di: DI) :
                     commitOrDropPrediction()
                     setRuntimeOption("ascii_mode", targetMode)
                 }
+            } else {
+                // ascii 模式未变的切换（如九宫格 → 数字键盘，两者都是中文模式）
+                // 不会进入上面的分支：残留在 composition 里的纯联想段会让数字键
+                // 命中 Rime 的候选选择器把联想词选上屏，这里同样丢弃（真实拼音
+                // 组合不受影响）。
+                service.postRimeJob { dropPredictionComposition() }
             }
 
             currentKeyboard = it

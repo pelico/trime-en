@@ -101,6 +101,18 @@ interface RimeApi {
         return false
     }
 
+    /**
+     * 仅当组合里只剩联想段（[getRawInput] 为空）时丢弃它；真实拼音组合不受影响。
+     *
+     * 用于 ascii 模式未变化的键盘切换（如九宫格 → 数字键盘）：这类切换不会走
+     * [commitOrDropPrediction]，残留在 composition 里的联想候选会让数字键命中
+     * Rime 的候选选择器，把联想词当候选选上屏。
+     */
+    suspend fun dropPredictionComposition() {
+        if (!statusCached.isComposing) return
+        if (getRawInput().isEmpty()) clearCompositionWithoutPrediction()
+    }
+
     suspend fun getRawInput(): String
 
     suspend fun setRuntimeOption(
