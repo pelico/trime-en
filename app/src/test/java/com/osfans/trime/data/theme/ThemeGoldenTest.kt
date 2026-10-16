@@ -110,7 +110,8 @@ class ThemeGoldenTest :
                     val style = theme.style
                     style.candidateTextSize shouldBe 22f
                     style.keyHeight shouldBe 44
-                    style.horizontalGap shouldBe 1
+                    style.horizontalGap shouldBe 6
+                    style.verticalGap shouldBe 6
                 }
 
                 Then("color schemes and preset keys are decoded") {

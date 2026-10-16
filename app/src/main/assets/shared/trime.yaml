@@ -24,7 +24,7 @@ style:
   comment_vertical_bias: 0.0 #编码提示垂直偏移位置（仅 overlay 模式使用，需要间隙空间足够，范围 0.0~1.0，0.0=top，0.5=center，1.0=bottom）
   comment_text_size: 10 #編碼提示字號
   hanb_font: hanb.ttf #擴充字型
-  horizontal_gap: 1 #鍵水平間距
+  horizontal_gap: 6 #鍵水平間距
   keyboard_padding: 0 #竖屏模式下，屏幕左右两侧与键盘的距离（曲面屏减少误触）
   keyboard_padding_left: 0 #竖屏屏模式下，左手键盘布局，屏幕左侧与键盘的距离
   keyboard_padding_right: 40 #竖屏屏模式下，左手键盘布局，屏幕右侧与键盘的距离
@@ -51,7 +51,7 @@ style:
   symbol_font: symbol.ttf #符號字型
   symbol_text_size: 10 #符號字號
   text_font: latin.ttf #編碼字型
-  vertical_gap: 1 #鍵盤行距
+  vertical_gap: 6 #鍵盤行距
   #background_folder: #背景图保存在background目录下的哪个子目录
   enter_label_mode: 0  #是否使用App提供的ActionLabel内容作为Enter键的文本（由于多数App没有适配ActionLable，实际影响不大）。0不使用，1只使用actionlabel，2优先使用，3当其他方式没有获得label时才读取actionlabel
   enter_labels:  # 定义Enter键的文本
@@ -1783,9 +1783,6 @@ preset_keyboards:
     lock: true
     width: 20
     height: 55
-    # 按键间距：仅作用于本九宫格键盘，覆盖全局 style 的 1px 间距。
-    horizontal_gap: 3
-    vertical_gap: 3
     round_corner: 8
     # 按键投影半径（dp），仅作用于本键盘；0 = 不投影。
     shadow_radius: 2

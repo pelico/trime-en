@@ -253,6 +253,7 @@ class CandidateItemUi(
         item: CandidateProto,
         highlighted: Boolean,
         englishText: String? = null,
+        showComment: Boolean = true,
     ) {
         val tColor = if (highlighted) hlTextColor else textColor
         val cColor = if (highlighted) hlCommentColor else commentColor
@@ -265,7 +266,7 @@ class CandidateItemUi(
         val commentText = item.comment
         comment.text = commentText
         comment.setTextColor(cColor)
-        comment.isVisible = commentText.isNotEmpty()
+        comment.isVisible = showComment && commentText.isNotEmpty()
 
         // 英文翻译行是否保留由调用方决定：englishText == null 表示该功能关闭，
         // 非 null（含空串）表示开启。开启时始终保留英文行——有翻译则显示，

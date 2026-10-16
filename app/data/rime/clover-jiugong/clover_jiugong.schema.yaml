@@ -123,7 +123,7 @@ speller:
 translator:
   dictionary: clover
   prism: clover_jiugong
-  spelling_hints: 0 # 关闭候选词的拼音标注（九宫格下拼音冗余，避免与 App 提供的英文翻译行互相挤占）
+  spelling_hints: 8 # 为候选标注拼音（写入 comment）：展开面板按读音分组行头依赖此数据；主候选栏不渲染 comment，无挤占问题
   enable_sentence: true
   enable_user_dict: true
   enable_encoder: true

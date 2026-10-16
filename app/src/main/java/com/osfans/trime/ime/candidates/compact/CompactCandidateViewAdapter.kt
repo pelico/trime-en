@@ -91,7 +91,9 @@ open class CompactCandidateViewAdapter(
             } else {
                 null
             }
-        holder.ui.update(item, isHighlighted, englishText)
+        // 主候选栏不显示 comment：九宫格方案开启 spelling_hints 后 comment 是拼音
+        // 读音，仅在展开面板里作为分组行头使用，主栏保持简洁。
+        holder.ui.update(item, isHighlighted, englishText, showComment = false)
         holder.text = item.text
         holder.comment = item.comment
         holder.idx = position // unused

@@ -13,12 +13,13 @@ import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import com.osfans.trime.ime.candidates.CandidateViewHolder
-import com.osfans.trime.ime.candidates.unrolled.PagingCandidateViewAdapter
 import com.osfans.trime.ime.candidates.unrolled.UnrolledCandidateLayout
+import com.osfans.trime.ime.candidates.unrolled.UnrolledCandidateViewAdapter
 import com.osfans.trime.ime.candidates.unrolled.decoration.FlexboxHorizontalDecoration
 import com.osfans.trime.ime.window.BoardWindow
 import org.kodein.di.DI
 import splitties.dimensions.dp
+import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.wrapContent
 
 class FlexboxUnrolledCandidateWindow(di: DI) : BaseUnrolledCandidateWindow(di) {
@@ -27,27 +28,33 @@ class FlexboxUnrolledCandidateWindow(di: DI) : BaseUnrolledCandidateWindow(di) {
     }
 
     override val adapter by lazy {
-        object : PagingCandidateViewAdapter(scope) {
+        object : UnrolledCandidateViewAdapter(scope, rime) {
             override fun onCreateViewHolder(
                 parent: ViewGroup,
                 viewType: Int,
-            ): CandidateViewHolder = super.onCreateViewHolder(parent, viewType).apply {
-                itemView.apply {
-                    minimumWidth = dp(40)
-                    val itemHeight = dp(theme.style.run { candidateViewHeight + commentHeight })
-                    layoutParams =
-                        FlexboxLayoutManager
-                            .LayoutParams(wrapContent, itemHeight)
-                            .apply { flexGrow = 1f }
-                }
+            ): RecyclerView.ViewHolder {
+                val holder = super.onCreateViewHolder(parent, viewType)
+                holder.itemView.layoutParams =
+                    when (viewType) {
+                        // 读音行头独占一整行，迫使 flexbox 在其后换行，实现按读音分行
+                        VIEW_TYPE_HEADER -> FlexboxLayoutManager.LayoutParams(matchParent, wrapContent)
+
+                        else ->
+                            FlexboxLayoutManager.LayoutParams(
+                                wrapContent,
+                                dp(theme.style.run { candidateViewHeight + commentHeight }),
+                            ).apply { flexGrow = 1f }
+                    }
+                if (viewType == VIEW_TYPE_CANDIDATE) holder.itemView.minimumWidth = dp(40)
+                return holder
             }
 
             override fun onBindViewHolder(
-                holder: CandidateViewHolder,
+                holder: RecyclerView.ViewHolder,
                 position: Int,
             ) {
                 super.onBindViewHolder(holder, position)
-                bindCandidateUiViewHolder(holder)
+                if (holder is CandidateViewHolder) bindCandidateUiViewHolder(holder)
             }
         }
     }

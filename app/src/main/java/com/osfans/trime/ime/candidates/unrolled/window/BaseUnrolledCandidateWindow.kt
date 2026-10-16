@@ -11,8 +11,6 @@ import android.view.View
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.recyclerview.widget.RecyclerView
 import com.osfans.trime.daemon.RimeSession
 import com.osfans.trime.daemon.launchOnReady
@@ -23,16 +21,14 @@ import com.osfans.trime.ime.bar.UnrollButtonStateMachine
 import com.osfans.trime.ime.broadcast.InputBroadcastReceiver
 import com.osfans.trime.ime.candidates.CandidateViewHolder
 import com.osfans.trime.ime.candidates.compact.CompactCandidateDelegate
-import com.osfans.trime.ime.candidates.unrolled.CandidatesPagingSource
-import com.osfans.trime.ime.candidates.unrolled.PagingCandidateViewAdapter
 import com.osfans.trime.ime.candidates.unrolled.UnrolledCandidateLayout
+import com.osfans.trime.ime.candidates.unrolled.UnrolledCandidateViewAdapter
 import com.osfans.trime.ime.core.InputView
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.keyboard.KeyboardWindow
 import com.osfans.trime.ime.window.BoardWindow
 import com.osfans.trime.ime.window.BoardWindowManager
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.instance
@@ -88,28 +84,10 @@ abstract class BaseUnrolledCandidateWindow(di: DI) :
         return candidateLayout
     }
 
-    abstract val adapter: PagingCandidateViewAdapter
+    abstract val adapter: UnrolledCandidateViewAdapter
     abstract val layoutManager: RecyclerView.LayoutManager
 
     private var offsetJob: Job? = null
-
-    private val candidatesPager by lazy {
-        Pager(
-            config = PagingConfig(
-                pageSize = 48,
-                enablePlaceholders = false,
-            ),
-            pagingSourceFactory = {
-                CandidatesPagingSource(
-                    rime,
-                    total = compactCandidate.adapter.total,
-                    offset = adapter.offset,
-                )
-            },
-        )
-    }
-
-    private var candidatesSubmitJob: Job? = null
 
     override fun onAttached() {
         lifecycleCoroutineScope = candidateLayout.findViewTreeLifecycleOwner()!!.lifecycleScope
@@ -126,12 +104,6 @@ abstract class BaseUnrolledCandidateWindow(di: DI) :
                             highlightedIndex = compactCandidate.adapter.highlightedIdx,
                         )
                     }
-                }
-            }
-        candidatesSubmitJob =
-            lifecycleCoroutineScope.launch {
-                candidatesPager.flow.collectLatest {
-                    adapter.submitData(it)
                 }
             }
     }
@@ -157,6 +129,5 @@ abstract class BaseUnrolledCandidateWindow(di: DI) :
                 (compactCandidate.adapter.total == adapter.offset),
         )
         offsetJob?.cancel()
-        candidatesSubmitJob?.cancel()
     }
 }
