@@ -122,12 +122,13 @@ class ThemeGoldenTest :
                     brightnessDown.send shouldBe "BRIGHTNESS_DOWN"
                 }
 
-                Then("all 18 plain keyboards are decoded with their keys") {
-                    theme.presetKeyboards.size shouldBe 18
+                Then("all 19 plain keyboards are decoded with their keys") {
+                    theme.presetKeyboards.size shouldBe 19
                     theme.presetKeyboards shouldContainKey "default"
                     theme.presetKeyboards shouldContainKey "qwerty0"
                     theme.presetKeyboards shouldContainKey "cangjie5"
                     theme.presetKeyboards shouldContainKey "array30"
+                    theme.presetKeyboards shouldContainKey "clover_jiugong"
 
                     val default = theme.presetKeyboards.getValue("default")
                     default.name shouldBe "預設40鍵"

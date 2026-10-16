@@ -21,7 +21,7 @@ import splitties.dimensions.dp
  * 展开面板的候选列表适配器：一次性拉取候选（见 [MAX_CANDIDATES]）后按读音分组展示，
  * 每组最上方是一个拼音读音行头。
  */
-class UnrolledCandidateViewAdapter(
+open class UnrolledCandidateViewAdapter(
     private val scope: ThemeScope,
     private val rime: RimeSession,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

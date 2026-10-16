@@ -7,6 +7,7 @@ package com.osfans.trime.ime.candidates.unrolled.window
 
 import android.view.Gravity
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Slide
 import androidx.transition.Transition
 import com.google.android.flexbox.AlignItems
@@ -34,18 +35,20 @@ class FlexboxUnrolledCandidateWindow(di: DI) : BaseUnrolledCandidateWindow(di) {
                 viewType: Int,
             ): RecyclerView.ViewHolder {
                 val holder = super.onCreateViewHolder(parent, viewType)
-                holder.itemView.layoutParams =
-                    when (viewType) {
-                        // 读音行头独占一整行，迫使 flexbox 在其后换行，实现按读音分行
-                        VIEW_TYPE_HEADER -> FlexboxLayoutManager.LayoutParams(matchParent, wrapContent)
+                holder.itemView.apply {
+                    layoutParams =
+                        when (viewType) {
+                            // 读音行头独占一整行，迫使 flexbox 在其后换行，实现按读音分行
+                            VIEW_TYPE_HEADER -> FlexboxLayoutManager.LayoutParams(matchParent, wrapContent)
 
-                        else ->
-                            FlexboxLayoutManager.LayoutParams(
-                                wrapContent,
-                                dp(theme.style.run { candidateViewHeight + commentHeight }),
-                            ).apply { flexGrow = 1f }
-                    }
-                if (viewType == VIEW_TYPE_CANDIDATE) holder.itemView.minimumWidth = dp(40)
+                            else ->
+                                FlexboxLayoutManager.LayoutParams(
+                                    wrapContent,
+                                    dp(theme.style.run { candidateViewHeight + commentHeight }),
+                                ).apply { flexGrow = 1f }
+                        }
+                    if (viewType == VIEW_TYPE_CANDIDATE) minimumWidth = dp(40)
+                }
                 return holder
             }
 
