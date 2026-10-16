@@ -73,20 +73,18 @@ class UnrolledCandidateViewAdapter(
 
     override fun getItemCount(): Int = items.size
 
-    override fun getItemViewType(position: Int): Int =
-        when (items[position]) {
-            is UnrolledDisplayItem.Header -> VIEW_TYPE_HEADER
-            is UnrolledDisplayItem.Candidate -> VIEW_TYPE_CANDIDATE
-        }
+    override fun getItemViewType(position: Int): Int = when (items[position]) {
+        is UnrolledDisplayItem.Header -> VIEW_TYPE_HEADER
+        is UnrolledDisplayItem.Candidate -> VIEW_TYPE_CANDIDATE
+    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-    ): RecyclerView.ViewHolder =
-        when (viewType) {
-            VIEW_TYPE_HEADER -> HeaderViewHolder(headerLabel(parent))
-            else -> CandidateViewHolder(CandidateItemUi(parent.context, scope))
-        }
+    ): RecyclerView.ViewHolder = when (viewType) {
+        VIEW_TYPE_HEADER -> HeaderViewHolder(headerLabel(parent))
+        else -> CandidateViewHolder(CandidateItemUi(parent.context, scope))
+    }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
@@ -123,14 +121,13 @@ class UnrolledCandidateViewAdapter(
         holder.idx = item.globalIdx
     }
 
-    private fun headerLabel(parent: ViewGroup): TextView =
-        TextView(parent.context).apply {
-            val theme = scope.theme
-            textSize = theme.style.commentTextSize
-            typeface = theme.fonts.comment
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(theme.style.candidatePadding + 2), dp(6), dp(4), dp(2))
-        }
+    private fun headerLabel(parent: ViewGroup): TextView = TextView(parent.context).apply {
+        val theme = scope.theme
+        textSize = theme.style.commentTextSize
+        typeface = theme.fonts.comment
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(dp(theme.style.candidatePadding + 2), dp(6), dp(4), dp(2))
+    }
 
     class HeaderViewHolder(
         val label: TextView,
