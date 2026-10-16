@@ -5,8 +5,6 @@
 
 package com.osfans.trime.ime.candidates.unrolled.window
 
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RectShape
 import android.view.View
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -32,8 +30,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.instance
-import splitties.dimensions.dp
-import kotlin.math.max
 
 abstract class BaseUnrolledCandidateWindow(di: DI) :
     BoardWindow.NoBarBoardWindow(di),
@@ -52,20 +48,8 @@ abstract class BaseUnrolledCandidateWindow(di: DI) :
     private lateinit var lifecycleCoroutineScope: LifecycleCoroutineScope
     private lateinit var candidateLayout: UnrolledCandidateLayout
 
-    protected val separatorDrawable by lazy {
-        ShapeDrawable(RectShape()).apply {
-            val spacing = theme.style.candidateSpacing
-            val intrinsicSize = max(spacing, context.dp(spacing)).toInt()
-            intrinsicWidth = intrinsicSize
-            intrinsicHeight = intrinsicSize
-            paint.color = scope.colors.candidateSeparatorColor
-        }
-    }
-
     override fun refreshColors() {
         if (!::candidateLayout.isInitialized) return
-        // the decorations share this drawable, so re-coloring its paint repaints the dividers
-        separatorDrawable.paint.color = scope.colors.candidateSeparatorColor
         candidateLayout.refreshColors()
         // visible rows re-apply their colors on rebind
         adapter.notifyDataSetChanged()

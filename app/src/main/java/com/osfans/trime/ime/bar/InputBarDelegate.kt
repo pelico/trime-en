@@ -35,7 +35,7 @@ import com.osfans.trime.ime.bar.ui.CandidateUi
 import com.osfans.trime.ime.bar.ui.TabUi
 import com.osfans.trime.ime.broadcast.InputBroadcastReceiver
 import com.osfans.trime.ime.candidates.compact.CompactCandidateDelegate
-import com.osfans.trime.ime.candidates.unrolled.window.FlexboxUnrolledCandidateWindow
+import com.osfans.trime.ime.candidates.unrolled.window.GroupedUnrolledCandidateWindow
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.keyboard.CommonKeyboardActionListener
 import com.osfans.trime.ime.keyboard.KeyBehavior
@@ -269,7 +269,7 @@ class InputBarDelegate(override val di: DI) :
 
     private fun setUnrollButtonToAttach() {
         candidateUi.unrollButton.setOnClickListener {
-            windowManager.attachWindow(FlexboxUnrolledCandidateWindow(di))
+            windowManager.attachWindow(GroupedUnrolledCandidateWindow(di))
         }
         candidateUi.unrollButton.setIcon(R.drawable.ic_baseline_expand_more_24)
     }

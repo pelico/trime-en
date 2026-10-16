@@ -6,7 +6,10 @@ package com.osfans.trime.ime.candidates.unrolled
 
 import android.view.Gravity
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.osfans.trime.core.CandidateProto
 import com.osfans.trime.daemon.RimeSession
@@ -18,25 +21,23 @@ import com.osfans.trime.ime.candidates.CandidateViewHolder
 import splitties.dimensions.dp
 
 /**
- * 展开面板的候选列表适配器：一次性拉取候选（见 [MAX_CANDIDATES]）后按读音分组展示，
- * 每组最上方是一个拼音读音行头。
+ * 展开面板的适配器：每个读音组占一行——左侧是拼音行头，右侧是该读音的候选横向列表，
+ * 手指右滑即可查看同一读音的更多候选，避免冷门读音把面板撑得过长。
  */
-open class UnrolledCandidateViewAdapter(
+class UnrolledCandidateViewAdapter(
     private val scope: ThemeScope,
     private val rime: RimeSession,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val bindCandidateUi: (CandidateViewHolder) -> Unit,
+) : RecyclerView.Adapter<UnrolledCandidateViewAdapter.GroupViewHolder>() {
     companion object {
         /**
-         * 一次性拉取的最大候选数。按读音分组需要完整候选列表才能正确排序，
+         * 一次性拉取的最大候选数。按读音分组需要完整候选列表才能正确归组，
          * 因此不再做增量分页；常规输入的候选菜单远小于该值。
          */
         const val MAX_CANDIDATES = 500
-
-        const val VIEW_TYPE_HEADER = 1
-        const val VIEW_TYPE_CANDIDATE = 2
     }
 
-    private val items = mutableListOf<UnrolledDisplayItem>()
+    private val groups = mutableListOf<UnrolledReadingGroup>()
 
     var offset: Int = 0
         private set
@@ -66,70 +67,101 @@ open class UnrolledCandidateViewAdapter(
             rime.runOnReady {
                 getCandidates(offset, MAX_CANDIDATES)
             }
-        items.clear()
-        items += buildUnrolledDisplayItems(candidates.toList(), offset)
+        groups.clear()
+        groups += buildUnrolledReadingGroups(candidates.toList(), offset)
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = items.size
-
-    override fun getItemViewType(position: Int): Int = when (items[position]) {
-        is UnrolledDisplayItem.Header -> VIEW_TYPE_HEADER
-        is UnrolledDisplayItem.Candidate -> VIEW_TYPE_CANDIDATE
-    }
+    override fun getItemCount(): Int = groups.size
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-    ): RecyclerView.ViewHolder = when (viewType) {
-        VIEW_TYPE_HEADER -> HeaderViewHolder(headerLabel(parent))
-        else -> CandidateViewHolder(CandidateItemUi(parent.context, scope))
+    ): GroupViewHolder {
+        val context = parent.context
+        // 拼音行头固定在行左侧，不随候选滚动
+        val header =
+            TextView(context).apply {
+                textSize = scope.theme.style.commentTextSize
+                typeface = scope.theme.fonts.comment
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(scope.theme.style.candidatePadding + 2), dp(6), dp(4), dp(2))
+            }
+        val rowAdapter = RowAdapter()
+        val row =
+            RecyclerView(context).apply {
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                adapter = rowAdapter
+            }
+        val container =
+            LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                addView(
+                    header,
+                    LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+                addView(
+                    row,
+                    LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+                )
+            }
+        return GroupViewHolder(container, header, row, rowAdapter)
     }
 
     override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: GroupViewHolder,
         position: Int,
     ) {
-        when (val item = items[position]) {
-            is UnrolledDisplayItem.Header ->
-                (holder as HeaderViewHolder).label.apply {
-                    text = item.label
-                    setTextColor(scope.colors.commentTextColor)
-                }
+        val group = groups[position]
+        holder.header.isVisible = group.label != null
+        holder.header.text = group.label.orEmpty()
+        // 行头用高亮候选的强调色，与正文候选文字区分开
+        holder.header.setTextColor(scope.colors.hilitedCandidateTextColor)
+        holder.rowAdapter.group = group
+        holder.rowAdapter.notifyDataSetChanged()
+    }
 
-            is UnrolledDisplayItem.Candidate -> bindCandidate(holder as CandidateViewHolder, item)
+    /** 单个读音组的横向候选列表。 */
+    inner class RowAdapter : RecyclerView.Adapter<CandidateViewHolder>() {
+        var group: UnrolledReadingGroup? = null
+
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): CandidateViewHolder = CandidateViewHolder(CandidateItemUi(parent.context, scope))
+
+        override fun getItemCount(): Int = group?.candidates?.size ?: 0
+
+        override fun onBindViewHolder(
+            holder: CandidateViewHolder,
+            position: Int,
+        ) {
+            val (proto, globalIdx) = group?.candidates?.get(position) ?: return
+            val highlighted = globalIdx == highlightedIndex
+            // 功能开启时，即使没有翻译也传空串（由 UI 用空格占位）；关闭时传 null。
+            val englishText =
+                if (englishEnabled) {
+                    CnEnDictManager.lookup(proto.text).orEmpty()
+                } else {
+                    null
+                }
+            // 读音已由行头展示，候选项本身不再显示 comment。
+            holder.ui.update(proto, highlighted, englishText, showComment = false)
+            holder.text = proto.text
+            holder.comment = proto.comment
+            holder.idx = globalIdx
+            bindCandidateUi(holder)
         }
     }
 
-    private fun bindCandidate(
-        holder: CandidateViewHolder,
-        item: UnrolledDisplayItem.Candidate,
-    ) {
-        val proto = item.proto
-        val highlighted = item.globalIdx == highlightedIndex
-        // 功能开启时，即使没有翻译也传空串（由 UI 用空格占位）；关闭时传 null。
-        val englishText =
-            if (englishEnabled) {
-                CnEnDictManager.lookup(proto.text).orEmpty()
-            } else {
-                null
-            }
-        // 读音已由分组行头展示，候选项本身不再显示 comment。
-        holder.ui.update(proto, highlighted, englishText, showComment = false)
-        holder.text = proto.text
-        holder.comment = proto.comment
-        holder.idx = item.globalIdx
-    }
-
-    private fun headerLabel(parent: ViewGroup): TextView = TextView(parent.context).apply {
-        val theme = scope.theme
-        textSize = theme.style.commentTextSize
-        typeface = theme.fonts.comment
-        gravity = Gravity.CENTER_VERTICAL
-        setPadding(dp(theme.style.candidatePadding + 2), dp(6), dp(4), dp(2))
-    }
-
-    class HeaderViewHolder(
-        val label: TextView,
-    ) : RecyclerView.ViewHolder(label)
+    inner class GroupViewHolder(
+        container: ViewGroup,
+        val header: TextView,
+        val row: RecyclerView,
+        val rowAdapter: RowAdapter,
+    ) : RecyclerView.ViewHolder(container)
 }
